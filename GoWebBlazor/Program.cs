@@ -24,7 +24,6 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https:/
 builder.Services.AddMediatR(cfg =>
 {
     MediatRServiceConfiguration mediatRServiceConfiguration = cfg.RegisterServicesFromAssembly(typeof(GoWeb.Shared.Service.CityService).Assembly);
-    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
 });
 builder.Services.AddScoped<CityService>();
 
