@@ -12,7 +12,7 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddAuthorizationCore();
 
 
-builder.RootComponents.Add<App>("#app");
+builder.RootComponents.Add<GoWeb.Shared.Features.Navigation.AppRoute>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddBootstrapBlazor();
 builder.Services.AddScoped<AuthenticationStateProviderCustom>();
