@@ -1,0 +1,147 @@
+﻿@inject IMediator mediator
+@inject NavigationManager NavManager
+@inject CityService cityService
+@inject ToastService toastService
+@using GoWeb.Shared.Models
+@using BootstrapBlazor.Components
+@using GoWeb.Shared.Service
+
+
+<EditForm Model="@FilterEvent" OnValidSubmit="SubmitForm">
+    <DataAnnotationsValidator />
+    <Card>
+        <HeaderTemplate>
+            <span><i class="bi bi-filter"></i> Фильтр событий</span>
+        </HeaderTemplate>
+        <BodyTemplate>
+            <div class="row align-items-end">
+                <div class="col mb-3" style="max-width: 300px;">
+                    <label class="form-label">Город:</label>
+                    <InputSelect @bind-Value="FilterEvent.SelectedCity" @bind-Value:after="OnCityChanged" class="form-select">
+                        <option value=0>Выберите город...</option>
+                        @foreach (var city in FilterEvent.Cities)
+                        {
+                            <option value="@city.Id">@city.NameCity</option>
+                        }
+                    </InputSelect>
+                </div>
+                @if(!flagHidden)
+                {
+                    <div class="col mb-3" style="max-width: 300px;">
+                        <label class="form-label">Тип события:</label>
+                        <InputSelect @bind-Value="FilterEvent.SelectedTypeEvent" class="form-select" disabled="@IsTypeSelectDisabled">
+                            @if (FilterEvent.TypeEvents!.Count() == 0)
+                            {
+                                <option value=0>Нет не одного события </option>
+                            }
+                            else
+                            {
+                                <option value=0>Выберите тип события...</option>
+                            }
+                            @foreach (var typeEvent in FilterEvent.TypeEvents)
+                            {
+                                <option value="@typeEvent.Id">@typeEvent.Name</option>
+                            }
+                        </InputSelect>
+                    </div>
+                }
+
+
+                <div class="col mb-3">
+                    <Button Color="Color.Primary" Icon="bi bi-search" Text="Применить" ButtonType="ButtonType.Submit" />
+                </div>
+            </div>
+        </BodyTemplate>
+    </Card>
+</EditForm>
+
+@code {
+
+
+    [Parameter]
+    public EventFilterDTO FilterEvent { get; set; } = new EventFilterDTO() { SelectedCity = 0, SelectedTypeEvent = 0 };
+    private bool IsTypeSelectDisabled => FilterEvent.TypeEvents == null || FilterEvent.TypeEvents.Count == 0;
+
+
+    private bool flagHidden = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        FilterEvent.Cities = new();
+        FilterEvent.TypeEvents = new();
+        var result = await cityService.GetCities();
+
+        if (result.IsSuccess)
+            FilterEvent.Cities = result.Data;
+        else
+        {
+            await toastService.Error("Ошибка!", result.ErrorMessage);
+        }
+
+        if (FilterEvent.SelectedCity == 0)
+        {
+            FilterEvent.SelectedCity = cityService.SelectedCity;
+        }
+
+
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (FilterEvent.SelectedCity != 0)
+        {
+            FilterEvent.TypeEvents = await LoadTypesEvents(FilterEvent.SelectedCity!.Value);
+        }
+        if (FilterEvent.SelectedTypeEvent != 0 && FilterEvent.TypeEvents.Count==0)
+        {
+            FilterEvent.SelectedTypeEvent = 0;
+        }
+    }
+
+
+
+    private Task SubmitForm(EditContext context)
+    {
+        var uriWithQuerystring = NavManager.GetUriWithQueryParameters(new Dictionary<string, object?>
+            {
+                [nameof(FilterEvent.SelectedCity)] = FilterEvent.SelectedCity == 0 ? null : FilterEvent.SelectedCity,
+                [nameof(FilterEvent.SelectedTypeEvent)] = FilterEvent.SelectedTypeEvent == 0 ? null : FilterEvent.SelectedTypeEvent,
+            });
+        NavManager.NavigateTo(uriWithQuerystring);
+        return Task.CompletedTask;
+    }
+
+    private async Task OnCityChanged()
+    {
+        if (FilterEvent.SelectedCity == 0)
+        {
+            flagHidden = true;
+            FilterEvent.SelectedTypeEvent = 0;
+            FilterEvent.TypeEvents = new();
+        }
+
+        else
+        {
+            FilterEvent.TypeEvents = await LoadTypesEvents(FilterEvent.SelectedCity!.Value);
+            flagHidden = false;
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task<List<EventTypeDTO>> LoadTypesEvents(int idCity)
+    {
+        flagHidden = false;
+        try
+        {
+            var response = await mediator.Send(new GetTypeEventsForCityRequest(idCity));
+            return response.typesEvents ?? new();
+        }
+        catch
+        {
+            await toastService.Error("Ошибка!", "Ошибка сервера");
+        }
+        return new();
+    }
+
+}

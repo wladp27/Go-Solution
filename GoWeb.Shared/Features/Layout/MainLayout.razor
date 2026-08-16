@@ -1,0 +1,16 @@
+﻿@using BootstrapBlazor.Components
+
+@namespace GoWeb.Shared.Features.Layout
+@inherits LayoutComponentBase
+
+
+<BootstrapBlazorRoot >
+
+    <div style="display: flex; flex-direction: column; min-height: 100vh;">
+        <HeaderCastom></HeaderCastom>
+        <main class="custom-offsetContent" style="flex: 1;">
+            @Body
+        </main>
+    </div>
+</BootstrapBlazorRoot>
+

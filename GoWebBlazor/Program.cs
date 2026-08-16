@@ -2,9 +2,10 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using GoWebBlazor;
 using GoWebBlazor.Service;
-using GoWebBlazor.Features.Auth.Handlers;
 using GoWeb.Shared.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
+using GoWeb.Shared.Service;
+using GoWeb.Shared.Features.Auth.Handlers;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -20,7 +21,11 @@ builder.Services.AddScoped<AuthenticationStateProvider>(provider =>
 builder.Services.AddScoped<AuthorizationMessageHandler>();
 builder.Services.AddHttpClient("TokenAPIClient", client => client.BaseAddress = new Uri("https://localhost:7065")).AddHttpMessageHandler<AuthorizationMessageHandler>();
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7065") });
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+builder.Services.AddMediatR(cfg =>
+{
+    MediatRServiceConfiguration mediatRServiceConfiguration = cfg.RegisterServicesFromAssembly(typeof(GoWeb.Shared.Service.CityService).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
+});
 builder.Services.AddScoped<CityService>();
 
 

@@ -1,0 +1,65 @@
+﻿@inject IMediator mediator
+@inject ITokenService tokenService
+@inject ToastService toastService
+@inject NavigationManager navigationManager
+@inject AuthenticationStateProviderCustom AuthenticationStateProvider;
+@page "/login"
+@using BootstrapBlazor.Components
+@using GoWeb.Shared.Service
+@using GoWeb.Shared.Сonstants
+
+<div class="d-flex justify-content-center align-items-center vh-100 w-100">
+    <div style="width: 400px;">
+        <EditForm Model="userLogin" OnValidSubmit="SubmitForm">
+            <DataAnnotationsValidator />
+            <Card>
+                <HeaderTemplate> <h3 class="text-center w-100">Вход</h3></HeaderTemplate>
+                <BodyTemplate>
+                    <div class="mb-3">
+                        <label for="userName" class="font-weight-bold text-secondary">Логин</label>
+                        <InputText @bind-Value="userLogin.UserName" class="form-control" id="userName" />
+                        <ValidationMessage For="@(() => userLogin.UserName)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="font-weight-bold text-secondary">Пароль</label>
+                        <InputText type="password" @bind-Value="userLogin.Password" class="form-control" id="password" />
+                        <ValidationMessage For="@(() => userLogin.Password)" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Войти</button>
+                </BodyTemplate>
+            </Card>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private UserLoginDTO userLogin =new ();
+
+
+    private async Task SubmitForm(EditContext context)
+    {
+        try
+        {
+            var response = await mediator.Send(new LoginRequest(userLogin));
+            if (response != null &&  response.token != null)
+            {
+                await tokenService.SetTokenAsync(response.token.Value);
+                AuthenticationStateProvider.NotifyUserAuthentication();
+                await toastService.Information("Успешный вход");
+                navigationManager.NavigateTo(Routes.MyEvents);
+            }
+            else
+                await toastService.Error("Ошибка авторизации");
+        }
+        catch(Exception ex)
+        {
+           await toastService.Error("Ошибка", ex.Message, true);
+        }
+        
+
+	}
+}
+
+  

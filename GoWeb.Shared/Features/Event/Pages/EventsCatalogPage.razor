@@ -1,0 +1,52 @@
+﻿@inject IMediator Mediator
+@inject ToastService toastService;
+@inject NavigationManager navigationManager;
+
+@page "/events"
+@using BootstrapBlazor.Components
+<h3>Каталог событий</h3>
+
+<EventFilter FilterEvent="filterDTO"></EventFilter>
+@if (SelectedCity == 0)
+{
+    <StatusMessage Message="Выберите город" Icon="bi-building" />
+}
+else
+{
+   <EventList List="list"> </EventList>
+}
+
+@code
+{
+
+    [Parameter, SupplyParameterFromQuery]
+    public int SelectedCity { get; set; }
+    [Parameter, SupplyParameterFromQuery]
+    public int SelectedTypeEvent { get; set; }
+
+    private EventFilterDTO filterDTO { get; set; } = new();
+
+    private List<EventSummaryDTO> list { get; set; } = new();
+
+
+
+    protected override async Task  OnParametersSetAsync()
+    {
+        filterDTO.SelectedCity = SelectedCity;
+        filterDTO.SelectedTypeEvent = SelectedTypeEvent;
+        if (SelectedCity!=0)
+        {
+            var listNew = (await Mediator.Send(new GetPublishedEventsRequest(filterDTO))).eventSummary;
+            if (listNew == null)
+            {
+                await toastService.Error("Ошибка", "Ошибка сервера, либо сервер не доступен");
+                list = new();
+            }
+            else
+                list = listNew;
+        }
+
+    }
+
+
+}

@@ -1,0 +1,36 @@
+﻿@using GoWeb.Shared.Сonstants
+@inject NavigationManager navigationManager
+
+@if (List != null)
+{
+    <div class="container mt-4">
+        <div class="row gy-3">
+            @foreach (var ev in List)
+            {
+                <div class="col-md-4">
+                    <EventCard SelectedEvent="ev" OnClick="(eventSummary)=>Click(eventSummary)"> </EventCard> 
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <StatusMessage Message="Ошибка сервера попробуйте позже" Icon="bi-exclamation-triangle" IsError="true" />
+}
+
+
+@code
+{
+    [Parameter, EditorRequired]
+    public List<EventSummaryDTO> List { get; set; } = default!;
+    private void Click(EventSummaryDTO eventSummary)
+    {
+        if (eventSummary != null)
+        {
+            var jsonModel = System.Text.Json.JsonSerializer.Serialize(eventSummary);
+            navigationManager.NavigateTo(Routes.EventDetails.Replace("{IdEvent}", eventSummary.Id.ToString()), new NavigationOptions { HistoryEntryState = jsonModel });
+        }
+
+    }
+}
