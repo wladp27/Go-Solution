@@ -1,0 +1,88 @@
+﻿<div class="swipe-area" @ontouchstart="HandleTouchStart" @ontouchend="HandleTouchEnd"></div>
+
+
+<div class="custom-drawer @(_isMenuOpen ? "open" : "")">
+    <div class="p-3">
+        <Menu  Items="@MenuItems"></Menu>
+    </div>
+</div>
+
+
+@if (_isMenuOpen)
+{
+    <div class="backdrop" @onclick="CloseMenu"></div>
+}
+@code {
+
+
+
+    private IEnumerable<MenuItem> MenuItems => new List<MenuItem>
+{
+    new MenuItem()
+    {
+
+        Icon = "bi bi-house",
+        Url = "/",
+        Match = NavLinkMatch.All
+    },
+    new MenuItem()
+    {
+
+        Icon = "bi bi-calendar",
+        Url = "/events"
+    },
+    new MenuItem()
+    {
+        Icon = "bi bi-calendar2-heart",
+        Url="/my-events"
+    }
+    // new MenuItem()
+    // {
+    //     Text = "Настройки",
+    //     Icon = "bi bi-gear",
+    //     Items = new List<MenuItem>
+    //     {
+    //         new MenuItem { Text = "Города", Url = "/cities" },
+    //         new MenuItem { Text = "Пользователи", Url = "/users" }
+    //     }
+    // }
+};
+
+    private bool _isMenuOpen;
+    private double _touchStartX;
+
+    private void HandleTouchStart(TouchEventArgs e)
+    {
+        if (e.Touches.Length > 0)
+        {
+            _touchStartX = e.Touches[0].ClientX;
+        }
+    }
+
+    private void HandleTouchEnd(TouchEventArgs e)
+    {
+        if (e.ChangedTouches.Length > 0)
+        {
+            double touchEndX = e.ChangedTouches[0].ClientX;
+            double diff = touchEndX - _touchStartX;
+
+            // Если свайпнули вправо больше чем на 70 пикселей, И касание началось у самого края экрана (первые 50px)
+            if (diff > 70 && _touchStartX < 50)
+            {
+                _isMenuOpen = true;
+                StateHasChanged();
+            }
+            // Если меню открыто и свайпнули влево — закрываем
+            else if (diff < -70 && _isMenuOpen)
+            {
+                _isMenuOpen = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private void CloseMenu()
+    {
+        _isMenuOpen = false;
+    }
+}

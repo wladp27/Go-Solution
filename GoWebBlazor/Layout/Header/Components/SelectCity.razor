@@ -1,0 +1,68 @@
+﻿@inject CityService cityService
+@inject ToastService toastService
+@inject AuthenticationStateProviderCustom authenticationStateProvider
+@implements IDisposable
+
+<Glass>
+    <IconContent>
+        <i class="bi bi-geo-alt-fill"></i>
+    </IconContent>
+    <ChildContent>
+        <InputSelect Value="selectedIdCity"
+        ValueChanged="@((int val) => OnCityChanged(val))"
+        ValueExpression="() => selectedIdCity" class="form-select border-0 bg-transparent text-white shadow-none">
+            <option value="0" style="color: #333; background-color: #fff;">Выберите город...</option>
+            @foreach (var city in cities)
+            {
+                <option value="@city.Id" style="color: #333; background-color: #fff;">@city.NameCity</option>
+            }
+        </InputSelect>
+    </ChildContent>
+</Glass>
+
+@code 
+{
+    public int selectedIdCity;
+    private List<CityDTO> cities = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        authenticationStateProvider.OnChange += OnAuthStateChanged;
+        var result = await cityService.GetCities();
+        if (result.IsSuccess)
+        {
+            cities = result.Data ?? new();
+        }
+        else
+        {
+            await toastService.Error("Ошибка", result.ErrorMessage);
+            StateHasChanged();  //иначе в интерфейсе не обновится вывод ошибки сверху
+        }
+
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        selectedIdCity = await cityService.GetIdCityInClaims();
+        StateHasChanged();
+    }
+
+    private async void OnAuthStateChanged()
+    {
+        selectedIdCity = await cityService.GetIdCityInClaims();
+        StateHasChanged();
+    }
+
+    private  void OnCityChanged(int newCityId)
+    {
+		selectedIdCity = newCityId; 
+		cityService.SetIdCity(newCityId);
+
+		
+	}
+
+
+    public void Dispose()
+    {
+        authenticationStateProvider.OnChange -= StateHasChanged;
+    }
+}

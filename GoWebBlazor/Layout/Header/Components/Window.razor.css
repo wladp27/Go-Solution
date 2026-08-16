@@ -1,0 +1,22 @@
+﻿.custom-popup-window {
+    position: fixed; /* Привязываемся к экрану, а не к родителю */
+    top: 70px; /* Отступ сверху (подгони под высоту твоего хедера) */
+    right: 20px; /* Отступ справа */
+    min-width: 220px;
+    background-color: #212529;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    animation: fadeIn 0.15s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

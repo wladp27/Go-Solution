@@ -1,0 +1,27 @@
+﻿.custom-group {
+    flex: 1 1 auto;
+    min-width: 160px;
+    max-width: 260px;
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+    .custom-group > .form-select,
+    .custom-group > .form-control,
+    .custom-group > a,
+    .custom-group > span:not(.input-group-text),
+    .custom-group > div:not(.position-relative) {
+        flex: 1 1 auto;
+        width: 1%;
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+@media (max-width: 768px) {
+    .custom-group {
+        min-width: 110px;
+        max-width: 100%;
+    }
+}

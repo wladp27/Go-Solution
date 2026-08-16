@@ -1,0 +1,36 @@
+﻿@inject HttpClient httpClient
+<div @onclick="HandleClick" style="cursor: pointer;">
+    <div class="card-hover-wrapper">
+        <Card class="shadow-sm border-0 h-100">
+            <HeaderTemplate>
+                <span class="fw-bold"><i class="bi bi-filter me-1"></i> @typeEvent.Name</span>
+            </HeaderTemplate>
+            <BodyTemplate>
+                <div class="d-flex justify-content-center p-2">
+                    <ImageViewer Url="@(httpClient.BaseAddress + typeEvent.ImagePath)"
+                                 FileIcon="fa-solid fa-file-image"
+                                 ShowPlaceHolder="true"
+                                 class="img-fluid rounded"
+                                 style="max-width: 100%; height: auto;"></ImageViewer>
+                </div>
+            </BodyTemplate>
+        </Card>
+    </div>
+</div>
+
+@code
+{
+    [Parameter, EditorRequired]
+    public EventTypeDTO typeEvent { get; set; } = default!;
+    [Parameter]
+    public EventCallback<int> OnClick { get; set; }
+
+    private async Task HandleClick()
+    {
+        if (typeEvent.Id!=null)
+        {
+           await OnClick.InvokeAsync(typeEvent.Id.Value);
+        }
+    }
+
+}

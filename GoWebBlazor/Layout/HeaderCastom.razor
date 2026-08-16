@@ -1,0 +1,23 @@
+﻿
+@inject HttpClient httpClient
+
+
+<div class="header-castom" >
+    <a href="/" style="display: block; height: 80%; padding: 0; margin: 0;">
+            <img src="@(httpClient.BaseAddress + "images/icons/logo.png")"
+                 style="height: 100%; width: auto; object-fit: contain; display: block;"
+                 alt="GO Logo">
+     </a>
+    <MenuCastom />
+
+    <div class="d-flex align-items-center gap-2" style="margin-left: auto;">
+        <SelectCity />
+        <LoginLogout/>
+    </div>
+</div>
+
+
+@code {
+ 
+	
+}

@@ -1,0 +1,10 @@
+﻿.custom-offsetContent {
+   
+}
+
+@media (max-width: 768px) {
+    .custom-offsetContent {
+        margin-left: 0px;
+        margin-bottom: 70px; 
+    }
+}

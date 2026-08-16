@@ -1,0 +1,12 @@
+﻿/* Обертка с плавной анимацией */
+.card-hover-wrapper {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    border-radius: 12px;
+    height: 100%;
+}
+
+    .card-hover-wrapper:hover {
+        transform: translateY(-6px);
+    }
+
+        

@@ -1,0 +1,74 @@
+﻿/* Тонкая невидимая зона слева шириной 30px, которая ловит свайпы от края */
+.swipe-area {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width:30px;
+    height: 100vh;
+    z-index: 1050;
+}
+
+.custom-drawer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between; /* Растягивает элементы по всей ширине */
+    align-items: center;
+    width: 100%;
+}
+
+    /* Настраиваем внутренний список компонента Menu */
+    .custom-drawer ul,
+    .custom-drawer .bb-menu {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+@media (max-width: 768px) {
+    .custom-drawer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100vw;
+        height: 60px;
+        background-color: #ffffff;
+        box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+        z-index: 1060;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around; /* Равномерное распределение на мобилках */
+        align-items: center;
+    }
+
+        .custom-drawer ul,
+        .custom-drawer .bb-menu {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+}
+
+
+
+
+
+
+
+    /* Затемнение фона под меню */
+    .backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 1055;
+    }

@@ -1,0 +1,38 @@
+﻿.card-custom {
+    border: none !important;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out !important;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background-color: #ffffff;
+}
+
+.card-custom:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-img-fixed {
+    height: 200px !important;
+    object-fit: contain !important;
+    width: 100%;
+    background-color: #f8f9fa;
+}
+
+.small-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; 
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.event-meta {
+    font-size: 0.85rem;
+}
+
+.border-top {
+    border-color: #f1f3f5 !important;
+}

@@ -1,0 +1,16 @@
+﻿<div class="input-group shadow-sm rounded-pill overflow-hidden align-items-center custom-group">
+    @if (IconContent != null)
+    {
+        <span class="input-group-text bg-transparent border-0 text-white ps-3 pe-1">
+            @IconContent
+        </span>
+    }
+    @ChildContent
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    [Parameter]
+    public RenderFragment? IconContent { get; set; }
+}

@@ -1,0 +1,54 @@
+﻿<div class="position-relative d-inline-block"
+     @onmouseenter="Show"
+     @onmouseleave="Hide"
+     @onclick="Toggle" style="cursor: pointer;">
+
+        @TriggerContent
+
+
+
+    @if (isOpen)
+    {
+        <div class="custom-popup-window shadow-lg rounded p-3" style="z-index: 1050;" @onclick:stopPropagation="true">
+            @PopupContent
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public RenderFragment? TriggerContent { get; set; }
+    [Parameter] public RenderFragment? PopupContent { get; set; }
+
+    private bool isOpen = false;
+    private CancellationTokenSource? _cts;
+
+    private void Toggle()
+    {
+        _cts?.Cancel();
+        isOpen = !isOpen;
+    }
+
+    private void Show()
+    {
+        _cts?.Cancel();
+        isOpen = true;
+    }
+
+    private async Task Hide()
+    {
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+
+        try
+        {
+  
+            await Task.Delay(150, _cts.Token);
+            isOpen = false;
+            StateHasChanged();
+        }
+        catch (TaskCanceledException)
+        {
+        }
+    }
+}
+
