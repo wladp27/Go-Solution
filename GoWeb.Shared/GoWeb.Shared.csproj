@@ -14,7 +14,6 @@
 	
 
 		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="2.3.0" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.22.0" />
 		<PackageReference Include="FluentResults" Version="4.0.0" />
