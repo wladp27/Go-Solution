@@ -1,4 +1,5 @@
-﻿@using GoWeb.Shared.Models
+﻿@using BootstrapBlazor.Components
+@using GoWeb.Shared.Models
 @inject HttpClient httpClient
 <div @onclick="HandleClick" style="cursor: pointer;">
     <div class="card-hover-wrapper">
@@ -30,7 +31,8 @@
     {
         if (typeEvent.Id!=null)
         {
-           await OnClick.InvokeAsync(typeEvent.Id.Value);
+            var a = httpClient.BaseAddress + typeEvent.ImagePath;
+            await OnClick.InvokeAsync(typeEvent.Id.Value);
         }
     }
 

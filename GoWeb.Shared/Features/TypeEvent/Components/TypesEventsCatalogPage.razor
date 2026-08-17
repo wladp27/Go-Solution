@@ -1,4 +1,5 @@
 ﻿@using BootstrapBlazor.Components
+@using GoWeb.Shared.Features.Shared
 @using GoWeb.Shared.Models
 @using GoWeb.Shared.Requests
 @using GoWeb.Shared.Service
@@ -52,7 +53,7 @@ else
     public int selectedIdTypeEvent { get; set; }
 
     private int oldSelectedIdCity { get; set; }
-    private List<EventTypeDTO> typesEvent = new();
+    private List<EventTypeDTO>? typesEvent = new();
 
     protected override async Task OnInitializedAsync()
     {
