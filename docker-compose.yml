@@ -1,0 +1,28 @@
+services:
+  db:
+    image: mysql:8.0
+    environment:
+        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+        MYSQL_DATABASE: ${MYSQL_DATABASE}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysql", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}", "-e", "SELECT 1;"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 25s
+
+  app:
+    image: ghcr.io/wladp27/go-solution:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=db;Port=3306;Database=${MYSQL_DATABASE};Uid=root;Pwd=${MYSQL_ROOT_PASSWORD};Pooling=false
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:

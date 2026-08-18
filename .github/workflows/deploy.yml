@@ -1,0 +1,34 @@
+on: push
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: docker/login-action@v3
+              with:
+                registry: ghcr.io
+                username: ${{ github.actor }}
+                password: ${{ secrets.GITHUB_TOKEN }}
+            - run: |
+                docker build -t ghcr.io/wladp27/go-solution:latest .
+                docker push ghcr.io/wladp27/go-solution:latest
+
+    deploy:
+        needs: build
+        runs-on: ubuntu-latest
+        steps:
+          - name: Deploy
+            uses: appleboy/ssh-action@v1
+            with:
+              host: ${{ secrets.SERVER_HOST }}
+              username: ${{ secrets.SERVER_USER }}
+              key: ${{ secrets.SSH_PRIVATE_KEY }}
+              script: |
+                echo "${{ secrets.CR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+                docker compose pull
+                docker compose up -d

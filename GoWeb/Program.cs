@@ -220,28 +220,28 @@ app.MapControllerRoute(
 
 
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
 
-//    var retries = 5;
-//    while (retries > 0)
-//    {
-//        try
-//        {
-//            db.Database.Migrate();
-//            break; 
-//        }
-//        catch (Exception ex)
-//        {
-//            retries--;
-//            if (retries == 0) throw;
+    var retries = 5;
+    while (retries > 0)
+    {
+        try
+        {
+            db.Database.Migrate();
+            break;
+        }
+        catch (Exception ex)
+        {
+            retries--;
+            if (retries == 0) throw;
 
-//            Console.WriteLine($"База еще не готова, ждем 3 секунды... Ошибка: {ex.Message}");
-//            Thread.Sleep(3000);
-//        }
-//    }
-//}
+            Console.WriteLine($"База еще не готова, ждем 3 секунды... Ошибка: {ex.Message}");
+            Thread.Sleep(3000);
+        }
+    }
+}
 
 app.Run();
