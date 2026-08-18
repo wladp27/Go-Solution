@@ -1,8 +1,7 @@
 ﻿using AutoMapper;
-using GoWeb.Models;
-using GoWeb.Сonstants;
 using GoWebApplication.Db.Models;
 using GoWeb.Shared.Models;
+using GoWeb.Shared.Сonstants;
 
 namespace GoWeb.Mapping
 {

@@ -1,0 +1,76 @@
+﻿<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+        <h5 class="fw-bold mb-3">Детали сеанса</h5>
+        <ul class="list-unstyled mb-4">
+            <li class="mb-3 d-flex align-items-start">
+                <i class="bi bi-calendar-check text-primary fs-5 me-3 mt-1"></i>
+                <div>
+                    <small class="text-muted d-block">Начало</small>
+                    <strong class="text-dark">@currentEvent.StartTime.ToString("dd MMMM yyyy, HH:mm")</strong>
+                </div>
+            </li>
+            <li class="mb-3 d-flex align-items-start">
+                <i class="bi bi-calendar-x text-danger fs-5 me-3 mt-1"></i>
+                <div>
+                    <small class="text-muted d-block">Окончание</small>
+                    <strong class="text-dark">@currentEvent.EndTime.ToString("dd MMMM yyyy, HH:mm")</strong>
+                </div>
+            </li>
+            <li class="mb-3 d-flex align-items-start">
+                <i class="bi bi-people text-success fs-5 me-3 mt-1"></i>
+                <div>
+                    <small class="text-muted d-block">Участники</small>
+                    <strong class="text-dark">@currentEvent.CountRegisteredUsers</strong> из @currentEvent.MaxParticipants
+                    <span class="text-muted small d-block">(мин. @currentEvent.MinParticipants)</span>
+                </div>
+            </li>
+            <li class="d-flex align-items-start">
+                <i class="bi bi-award text-warning fs-5 me-3 mt-1"></i>
+                <div>
+                    <small class="text-muted d-block">Требуемый рейтинг</small>
+                    <strong class="text-dark">@currentEvent.RequiredRating</strong>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+
+
+
+<!-- Описание -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+        <h4 class="card-title fw-bold mb-3">
+            <i class="bi bi-info-circle text-primary me-2"></i>О событии
+        </h4>
+        @if (!string.IsNullOrEmpty(currentEvent.EventDescription))
+        {
+            <p class="card-text text-secondary lh-lg" style="white-space: pre-line;">@currentEvent.EventDescription</p>
+        }
+        else
+        {
+            <p class="text-muted fst-italic mb-0">Описание к этому событию еще не добавлено.</p>
+        }
+    </div>
+</div>
+
+<!-- Локация -->
+@if (currentEvent.Location != null)
+{
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <h4 class="card-title fw-bold mb-3">
+                <i class="bi bi-geo-alt text-danger me-2"></i>Место проведения
+            </h4>
+            <p class="mb-1 fw-bold">@currentEvent.Location.Address</p>
+        </div>
+    </div>
+}
+
+                
+@code {
+    [Parameter, EditorRequired]
+    public EventSummaryDTO currentEvent { get; set; } = default!;
+
+   
+}

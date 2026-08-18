@@ -30,7 +30,7 @@
                     <div class="col mb-3" style="max-width: 300px;">
                         <label class="form-label">Тип события:</label>
                         <InputSelect @bind-Value="FilterEvent.SelectedTypeEvent" class="form-select" disabled="@IsTypeSelectDisabled">
-                            @if (FilterEvent.TypeEvents!.Count() == 0)
+                            @if (FilterEvent.TypeEvents.Count() == 0)
                             {
                                 <option value=0>Нет не одного события </option>
                             }
@@ -59,7 +59,7 @@
 
 
     [Parameter]
-    public EventFilterDTO FilterEvent { get; set; } = new EventFilterDTO() { SelectedCity = 0, SelectedTypeEvent = 0 ,Cities=new(),TypeEvents = new()};
+    public EventFilterDTO FilterEvent { get; set; } = new EventFilterDTO() { SelectedCity = 0, SelectedTypeEvent = 0 };
     private bool IsTypeSelectDisabled => FilterEvent.TypeEvents == null || FilterEvent.TypeEvents.Count == 0;
 
 
@@ -67,6 +67,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        FilterEvent.Cities = new List<CityDTO>();
+        FilterEvent.TypeEvents = new List<EventTypeDTO>();  
         var result = await cityService.GetCities();
 
         if (result.IsSuccess)
@@ -86,12 +88,12 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        if (FilterEvent.SelectedCity != 0)
+        if (FilterEvent.SelectedCity!=null && FilterEvent.SelectedCity != 0)
         {
-            FilterEvent.TypeEvents = await LoadTypesEvents(FilterEvent.SelectedCity!.Value);
+            FilterEvent.TypeEvents = await LoadTypesEvents(FilterEvent.SelectedCity.Value);
             FilterEvent.SelectedTypeEvent = 0;
         }
-        if (FilterEvent.SelectedTypeEvent != 0 && (FilterEvent.TypeEvents ?? new()).Count == 0)
+        if (FilterEvent.SelectedTypeEvent != null && FilterEvent.SelectedTypeEvent != 0 && (FilterEvent.TypeEvents ?? new()).Count == 0)
         {
             FilterEvent.SelectedTypeEvent = 0;
         }

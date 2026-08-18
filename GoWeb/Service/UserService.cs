@@ -2,7 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using GoWeb.Interfaces;
 using GoWeb.Shared.Models;
-using GoWeb.Сonstants;
+using GoWeb.Shared.Сonstants;
 using GoWebApplication.Db.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;

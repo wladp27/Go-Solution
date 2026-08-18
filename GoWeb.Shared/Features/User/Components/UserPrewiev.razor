@@ -1,0 +1,53 @@
+﻿@using GoWeb.Shared.Models
+<div class="card border-0 shadow-sm rounded-4 p-3 mb-2 bg-white transition-hover">
+    <div class="d-flex align-items-center justify-content-between">
+
+        <div class="d-flex align-items-center gap-3">
+            <div class="avatar-badge bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                 style="width: 48px; height: 48px; font-size: 1.1rem; min-width: 48px;">
+                @GetInitials(User.DisplayName ?? User.UserName)
+            </div>
+
+            <div>
+                <h6 class="mb-0 fw-bold text-dark">@(string.IsNullOrWhiteSpace(User.DisplayName) ? User.UserName : User.DisplayName)</h6>
+                <small class="text-muted">@@@User.UserName</small>
+            </div>
+        </div>
+
+        <div class="text-end">
+            @if (User.Ratings != null && EventTypeId!=0)
+            {
+                <div class="d-flex align-items-center gap-1 bg-light px-2 py-1 rounded-pill">
+                    <span class="text-warning">★</span>
+                    <span class="fw-semibold text-dark small">@(User.Ratings.FirstOrDefault(r => r.EventTypeId == EventTypeId)?.Value ?? 0)</span>
+                </div>
+            }
+            else
+            {
+                <span class="text-muted small fst-italic">Без оценок</span>
+            }
+        </div>
+
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public UserPrewievDTO User { get; set; } = default!;
+
+    [Parameter]
+    public int EventTypeId { get; set; }
+
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "U";
+
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+        {
+            return $"{char.ToUpper(parts[0][0])}{char.ToUpper(parts[1][0])}";
+        }
+
+        return name.Substring(0, Math.Min(2, name.Length)).ToUpper();
+    }
+}

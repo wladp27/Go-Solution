@@ -1,95 +1,96 @@
 ﻿@using System.Globalization
 @inject HttpClient HttpClient
 
-<div class="card card-custom h-100" @onclick="HandleClick">
-    <div style="height: 320px; background-image: linear-gradient(to top, rgba(0,0,0,1.0), transparent), url('@(HttpClient.BaseAddress + SelectedEvent.ImagePath)'); background-size: cover; background-position: center; background-repeat: no-repeat; position: relative;">
+@if (SelectedEvent != null)
+{
+    <div class="card card-custom h-100" @onclick="HandleClick">
+        <div style="height: 320px; background-image: linear-gradient(to top, rgba(0,0,0,1.0), transparent), url('@(HttpClient.BaseAddress + SelectedEvent.ImagePath)'); background-size: cover; background-position: center; background-repeat: no-repeat; position: relative;">
 
-        <div class="position-absolute bottom-0 start-0 p-4 text-white">
-            <h1 class="h2 fw-bold text-white mb-0">@SelectedEvent.EventName</h1>
-        </div>
-    </div>
-    <div class="card-body d-flex flex-column">
-
-        <!-- Название события -->
-        <h5 class="card-title text-dark fw-bold mb-2 text-truncate" title="@SelectedEvent.EventName">
-            @SelectedEvent.EventName
-        </h5>
-
-        <!-- Дата и время проведения -->
-        <div class="event-meta text-muted small mb-2 d-flex align-items-center gap-2">
-            <i class="bi bi-calendar-event text-primary"></i>
-            <span class="fw-semibold text-secondary">Дата:</span>
-            <span>@SelectedEvent.StartTime.ToString("dd.MM.yyyy")</span>
-        </div>
-
-        <div class="event-meta text-muted small mb-2 d-flex align-items-center gap-2">
-            <i class="bi bi-clock text-primary"></i>
-            <span class="fw-semibold text-secondary">Начало:</span>
-            <span>@SelectedEvent.StartTime.ToString("HH:mm")</span>
-            <span class="fw-semibold text-secondary">Конец:</span>
-            <span>@SelectedEvent.EndTime.ToString("HH:mm")</span>
-        </div>
-
-        <!-- Локация -->
-        @if (SelectedEvent.Location != null)
-        {
-            <div class="event-meta text-muted small mb-2 d-flex align-items-center gap-2 text-truncate">
-                <i class="bi bi-geo-alt text-danger"></i>
-                <span class="fw-semibold text-secondary flex-shrink-0">Место:</span>
-                <span class="text-truncate">@SelectedEvent.Location.Address</span>
+            <div class="position-absolute bottom-0 start-0 p-4 text-white">
+                <h1 class="h2 fw-bold text-white mb-0">@SelectedEvent.EventName</h1>
             </div>
-        }
+        </div>
+        <div class="card-body d-flex flex-column">
 
-        <!-- Организатор -->
-        @if (!string.IsNullOrEmpty(SelectedEvent.OrganizerName))
-        {
-            <div class="event-meta text-muted small mb-3 d-flex align-items-center gap-2">
-                <i class="bi bi-person text-secondary"></i>
-                <span class="fw-semibold text-secondary">Организатор:</span>
-                <span>@SelectedEvent.OrganizerName</span>
+            <!-- Название события -->
+            <h5 class="card-title text-dark fw-bold mb-2 text-truncate" title="@SelectedEvent.EventName">
+                @SelectedEvent.EventName
+            </h5>
+
+            <!-- Дата и время проведения -->
+            <div class="event-meta text-muted small mb-2 d-flex align-items-center gap-2">
+                <i class="bi bi-calendar-event text-primary"></i>
+                <span class="fw-semibold text-secondary">Дата:</span>
+                <span>@SelectedEvent.StartTime.ToString("dd.MM.yyyy")</span>
             </div>
-        }
 
-        <!-- Описание -->
-        <p class="card-text text-muted flex-grow-1 small-desc mb-3">
-            @SelectedEvent.EventDescription
-        </p>
+            <div class="event-meta text-muted small mb-2 d-flex align-items-center gap-2">
+                <i class="bi bi-clock text-primary"></i>
+                <span class="fw-semibold text-secondary">Начало:</span>
+                <span>@SelectedEvent.StartTime.ToString("HH:mm")</span>
+                <span class="fw-semibold text-secondary">Конец:</span>
+                <span>@SelectedEvent.EndTime.ToString("HH:mm")</span>
+            </div>
 
-        <!-- Количество участников и шкала заполнености -->
-        @if (SelectedEvent.MaxParticipants > 0)
-        {
-            <div class="mb-3">
-                <div class="d-flex justify-content-between small text-muted mb-1">
-                    <span>Участники:</span>
-                    <span class="fw-semibold">@SelectedEvent.CountRegisteredUsers из @SelectedEvent.MaxParticipants</span>
+            <!-- Локация -->
+            @if (SelectedEvent.Location != null)
+            {
+                <div class="event-meta text-muted small mb-2 d-flex align-items-center gap-2 text-truncate">
+                    <i class="bi bi-geo-alt text-danger"></i>
+                    <span class="fw-semibold text-secondary flex-shrink-0">Место:</span>
+                    <span class="text-truncate">@SelectedEvent.Location.Address</span>
                 </div>
-                <div class="progress" style="height: 6px;">
-                    <div class="progress-bar"
-                         role="progressbar"
-                         style="width: @(GetCapacityPercentage().ToString(CultureInfo.InvariantCulture))%; min-width: 4px; background-color:@SetColorStatusBar();"
-                         aria-valuenow="@SelectedEvent.CountRegisteredUsers"
-                         aria-valuemin="0"
-                         aria-valuemax="@SelectedEvent.MaxParticipants">
+            }
+
+            <!-- Организатор -->
+            @if (!string.IsNullOrEmpty(SelectedEvent.OrganizerName))
+            {
+                <div class="event-meta text-muted small mb-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-person text-secondary"></i>
+                    <span class="fw-semibold text-secondary">Организатор:</span>
+                    <span>@SelectedEvent.OrganizerName</span>
+                </div>
+            }
+
+            <!-- Описание -->
+            <p class="card-text text-muted flex-grow-1 small-desc mb-3">
+                @SelectedEvent.EventDescription
+            </p>
+
+            <!-- Количество участников и шкала заполнености -->
+            @if (SelectedEvent.MaxParticipants > 0)
+            {
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small text-muted mb-1">
+                        <span>Участники:</span>
+                        <span class="fw-semibold">@SelectedEvent.CountRegisteredUsers из @SelectedEvent.MaxParticipants</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar"
+                        role="progressbar"
+                             style="@GetProgressStyle()"
+                        aria-valuenow="@SelectedEvent.CountRegisteredUsers"
+                        aria-valuemin="0"
+                        aria-valuemax="@SelectedEvent.MaxParticipants">
+                        </div>
                     </div>
                 </div>
-            </div>
-        }
+            }
 
-        <!-- Блок с ценой и кнопкой -->
-        <div class="d-flex align-items-center justify-content-between mt-auto pt-3 border-top">
-            <div>
-                <span class="d-block text-muted small text-uppercase fw-semibold" style="font-size: 0.75rem;">Стоимость</span>
-                <span class="h5 text-primary fw-bold mb-0">
-                    @SelectedEvent.Price.ToString("N0") ₽
-                </span>
+
+            <div class="d-flex align-items-center justify-content-between mt-auto pt-3 border-top">
+                <div>
+                    <span class="d-block text-muted small text-uppercase fw-semibold" style="font-size: 0.75rem;">Стоимость</span>
+                    <span class="h5 text-primary fw-bold mb-0">
+                        @SelectedEvent.Price.ToString("N0") ₽
+                    </span>
+                </div>
+               
             </div>
-            <button class="btn btn-primary px-4 rounded-pill shadow-sm" >
-                Записаться
-            </button>
+
         </div>
-
     </div>
-</div>
+}
 
 @code {
     [Parameter, EditorRequired]
@@ -102,7 +103,6 @@
     {
         if (OnClick.HasDelegate)
         {
-             var a=HttpClient.BaseAddress + SelectedEvent.ImagePath;
             await OnClick.InvokeAsync(SelectedEvent);
         }
     }
@@ -124,4 +124,6 @@
         }
         return "#dc3545";
     }
+    private string GetProgressStyle() =>
+    $"width: {GetCapacityPercentage().ToString(CultureInfo.InvariantCulture)}%; min-width: 4px; background-color: {SetColorStatusBar()};";
 }

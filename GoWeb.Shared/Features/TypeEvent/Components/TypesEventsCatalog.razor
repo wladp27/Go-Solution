@@ -96,10 +96,10 @@ else
         {
             try
             {
-                typesEvent = (await mediator.Send(new GetTypeEventsForCityRequest(selectedIdCity))).typesEvents ?? new();
+                typesEvent = (await mediator.Send(new GetTypeEventsForCityRequest(selectedIdCity)))?.typesEvents ?? new();
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 typesEvent = null;
                 await toastService.Error("Ошибка!", "Ошибка сервера");

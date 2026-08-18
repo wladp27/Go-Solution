@@ -1,0 +1,54 @@
+﻿@using GoWeb.Shared.Features.User.Components
+
+@if (userRegisteredPrewievs != null && userRegisteredPrewievs.Any())
+{
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold text-secondary mb-0">Участники</h6>
+            <span class="badge bg-primary rounded-pill">@userRegisteredPrewievs.Count</span>
+        </div>
+        <div class="d-flex flex-column gap-2">
+            @foreach (var user in userRegisteredPrewievs)
+            {
+                <UserPrewiev User="user" EventTypeId="eventSummary.EventTypeId"></UserPrewiev>
+            }
+        </div>
+    </div>
+}
+
+@if (userReservedPrewievs != null && userReservedPrewievs.Any())
+{
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold text-secondary mb-0">Резерв</h6>
+            <span class="badge bg-warning text-dark rounded-pill">@userReservedPrewievs.Count</span>
+        </div>
+        <div class="d-flex flex-column gap-2">
+            @foreach (var user in userReservedPrewievs)
+            {
+                <UserPrewiev User="user" EventTypeId="eventSummary.EventTypeId"></UserPrewiev>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter,EditorRequired]
+    public EventSummaryDTO eventSummary { get; set; } = default!;
+    [Parameter, EditorRequired]
+    public List<UserPrewievDTO> Users { get; set; } = default!;
+
+
+
+    private List<UserPrewievDTO> userRegisteredPrewievs { get; set; } = new();
+    private List<UserPrewievDTO> userReservedPrewievs { get; set; } = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (eventSummary != null && Users != null)
+    {
+            userRegisteredPrewievs = Users.Take(eventSummary.MaxParticipants).ToList();
+            userReservedPrewievs = Users.Skip(eventSummary.MaxParticipants).ToList();
+        }
+    }
+}

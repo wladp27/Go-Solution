@@ -1,5 +1,5 @@
 ﻿using GoWeb.Interfaces;
-using GoWeb.Сonstants;
+using GoWeb.Shared.Сonstants;
 using GoWebApplication.Db.Data;
 using GoWebApplication.Db.Models;
 using Microsoft.AspNetCore.Identity;

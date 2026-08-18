@@ -1,0 +1,82 @@
+﻿@using BootstrapBlazor.Components
+@using GoWeb.Shared.Сonstants
+
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+@inject IMediator mediator
+
+<button class="btn btn-primary w-100 py-2 fw-bold shadow-sm"
+        @onclick="HandleButtonClick"
+        disabled="@_isSubscribing">
+    @if (_isSubscribing)
+    {
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        <span>Обработка...</span>
+    }
+    else
+    {
+        <i class="@GetIconClass() me-1"></i>
+        <span>@GetButtonText()</span>
+    }
+
+</button>
+
+@code {
+    [Parameter, EditorRequired]
+    public bool IsAuthenticated{ get; set; }
+    [Parameter, EditorRequired]
+    public bool IsRegisteredInEvent{ get; set; }
+    [Parameter, EditorRequired]
+    public int IdEvent{ get; set; }
+    [Parameter]
+    public EventCallback OnChanged { get; set; }
+
+    private bool _isSubscribing = false;
+    private string GetButtonText() => !IsAuthenticated ? "Войти для участия" : IsRegisteredInEvent ? "Выписаться из события" : "Записаться на событие";
+    private string GetIconClass() => !IsAuthenticated ? "bi bi-box-arrow-in-right" : IsRegisteredInEvent ? "bi bi-x-circle" : "bi bi-check2-circle";
+    private async Task HandleButtonClick()
+    {
+        if (!IsAuthenticated)
+        {
+            navigationManager.NavigateTo(Routes.Login);
+            return;
+        }
+
+        if (IdEvent == 0) return;
+        _isSubscribing = true;
+        try
+        {
+            BaseResponse? response = IsRegisteredInEvent
+                ? await mediator.Send(new LeaveEventRequest(IdEvent))
+                : await mediator.Send(new JoinEventRequest(IdEvent));
+
+            await HandleResponseAsync(response);
+            await OnChanged.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            await toastService.Error("Ошибка", ex.Message);
+        }
+        finally
+        {
+            _isSubscribing = false;
+        }
+    }
+
+    private async Task HandleResponseAsync(BaseResponse? response)
+    {
+        if (response != null)
+        {
+            if (response.Code == "Success")
+                await toastService.Success(response.Code, response.Message);
+            else
+                await toastService.Error(response.Code, response.Message);
+        }
+        else
+        {
+            await toastService.Error("Ошибка", "Не удалось выполнить запрос, неизвестная ошибка");
+        }
+    }
+
+
+}

@@ -1,0 +1,38 @@
+﻿@inject HttpClient httpClient
+
+
+<div class="card shadow-sm border-0 mb-4 overflow-hidden">
+    @if (!string.IsNullOrEmpty(currentEvent.ImagePath))
+    {
+        <div style="height: 320px; background-image: linear-gradient(to top, rgba(0,0,0,2.6), transparent), url('@(httpClient.BaseAddress + currentEvent.ImagePath)'); background-size: cover; background-position: center; background-repeat: no-repeat; position: relative;">
+
+            <div class="position-absolute bottom-0 start-0 p-4 text-white">
+                <h1 class="h2 fw-bold text-white mb-0">@currentEvent.EventName</h1>
+            </div>
+
+        </div>
+    }
+    else
+    {
+        <div class="bg-primary bg-gradient text-white p-5 text-center">
+            <i class="bi bi-calendar-event display-1 mb-2"></i>
+            <h1 class="h2 fw-bold">@currentEvent.EventName</h1>
+        </div>
+    }
+    <div class="card-body p-3 px-4 bg-light border-top d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <i class="bi bi-person-badge text-secondary me-1"></i> Организатор:
+            <strong class="text-dark">@(string.IsNullOrEmpty(currentEvent.OrganizerName) ? "Не указан" : currentEvent.OrganizerName)</strong>
+        </div>
+        <div>
+            <span class="badge bg-success fs-6 px-3 py-2">
+                @(currentEvent.Price == 0 ? "Бесплатно" : $"{currentEvent.Price:N0} ₽")
+            </span>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public EventSummaryDTO currentEvent { get; set; } = default!;
+}

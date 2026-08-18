@@ -1,0 +1,153 @@
+﻿@using System.Security.Claims
+@using BootstrapBlazor.Components
+@using GoWeb.Shared.Features.Event.Components.Event_Details
+@using GoWeb.Shared.Features.Shared
+
+
+
+@page "/event-details/{IdEvent:int}"
+
+
+@inject NavigationManager navigationManager
+@inject IMediator mediator
+@inject HttpClient httpClient
+@inject IJSRuntime JS
+@inject ToastService toastService
+
+<div class="container py-4">
+    @if (isLoading)
+    {
+        <!-- Индикатор загрузки -->
+        <div class="text-center my-5 py-5">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Загрузка...</span>
+            </div>
+            <p class="text-muted mt-2">Загружаем информацию о событии...</p>
+        </div>
+    }
+    else if (currentEvent == null)
+    {
+        <!-- Ошибка, если событие не найдено -->
+        <div class="my-5">
+            <StatusMessage Message="Событие не найдено или было удалено" Icon="bi-calendar-x" />
+            <div class="text-center mt-3">
+                <button class="btn btn-outline-primary" @onclick="GoBack">Вернуться назад</button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="mb-3">
+            <button class="btn btn-outline-secondary btn-sm px-3" @onclick="GoBack">
+                <i class="bi bi-arrow-left me-1"></i> Назад
+            </button>
+        </div>
+
+        <HeaderEvent currentEvent="currentEvent"></HeaderEvent>
+
+        <!-- Основной контент (Две колонки) -->
+        <div class="row g-4">
+
+            <div class="col-lg-8">
+                        <Details currentEvent="currentEvent"></Details>
+             </div>
+
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0 sticky-top" style="top: 20px; z-index: 10;">
+                    <div class="card-body p-4">
+                        <UsersInEvent eventSummary="currentEvent" Users="users"></UsersInEvent>
+
+                        <JoinLeaveButton IsAuthenticated="_isAuthenticated"
+                                         IsRegisteredInEvent="isRegisteredInEvent"
+                                         IdEvent="IdEvent"
+                                         OnChanged="LoadEventUsersAsync" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int IdEvent { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthStateTask { get; set; } = default!;
+
+    private bool _isAuthenticated;
+
+
+    private EventSummaryDTO? currentEvent;
+    private bool isLoading = true;
+    private List<UserPrewievDTO> users = new();
+    private bool isRegisteredInEvent = false;
+    private string? _currentUserId;
+
+
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var authState = await AuthStateTask;
+        var user = authState.User;
+        _isAuthenticated = user.Identity?.IsAuthenticated ?? false;
+        _currentUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        await LoadEventUsersAsync();
+    }
+
+    private async Task LoadEventUsersAsync()
+    {
+        isLoading = true;
+        var state = navigationManager.HistoryEntryState;
+        bool loadedFromState = false;
+
+        if (!string.IsNullOrEmpty(state))
+        {
+            var parsedEvent = System.Text.Json.JsonSerializer.Deserialize<EventSummaryDTO>(state);
+            if (parsedEvent != null && parsedEvent.Id == IdEvent)
+            {
+                currentEvent = parsedEvent;
+                loadedFromState = true;
+
+                var responseUsers = await mediator.Send(new GetUsersFromEventRequest(IdEvent));
+                if (responseUsers.IsSuccess)
+                {
+                    users = responseUsers.users ?? new();
+                }
+                else
+                {
+                    await toastService.Error("Ошибка", responseUsers.Message ?? "Не удалось загрузить участников");
+                }
+            }
+        }
+
+        if (!loadedFromState)
+        {
+            var response = await mediator.Send(new GetEventWithUsersRequest(IdEvent));
+            if (response.IsSuccess && response.EventWithUsersDTO != null)
+            {
+                currentEvent = response.EventWithUsersDTO;
+                users = response.EventWithUsersDTO.Users ?? new();
+            }
+            else
+            {
+                await toastService.Error("Ошибка", response.Message ?? "Не удалось загрузить событие");
+            }
+        }
+
+        if (currentEvent!=null)
+        {
+            isRegisteredInEvent = users.Any(u => u.Id == _currentUserId);
+        }
+
+        isLoading = false;
+    }
+
+    private async Task GoBack()
+    {
+        await JS.InvokeVoidAsync("history.back");
+    }
+
+    
+}

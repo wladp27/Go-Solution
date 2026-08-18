@@ -5,8 +5,8 @@ namespace GoWeb.Shared.Models
     {
  
 
-        public List<UserPrewievDTO> UsersRegistered { get; set; }
-        public List<UserPrewievDTO> UsersInReserve { get; set; }
+        public List<UserPrewievDTO> Users{ get; set; }
+
 
     }
 }

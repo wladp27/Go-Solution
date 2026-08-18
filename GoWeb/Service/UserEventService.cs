@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using GoWeb.Interfaces;
 using GoWeb.Shared.Models;
-using GoWeb.Сonstants;
+using GoWeb.Shared.Сonstants;
 using GoWebApplication.Db.Models;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -73,51 +73,65 @@ namespace GoWeb.Service
             return result;
         }
 
-        public async Task<List<UserPrewievDTO>> GetUsersEventAsync(int idEvent)
-        {
 
-            if (cache.TryGetValue(new UsersInEventCacheKey(idEvent), out List<string>? idUsers))
+        public async Task<List<UserPrewievDTO>?> GetUsersEventAsync(int idEvent)
+        {
+            var cacheKey = new UsersInEventCacheKey(idEvent);
+            if (cache.TryGetValue(cacheKey, out List<string>? idUsers))
             {
-                var users = await userService.GetPreviewUsers(idUsers);
-                return users;
+                if (idUsers == null)
+                    return null;
+                if (idUsers.Count == 0)
+                    return new(); 
+                return await userService.GetPreviewUsers(idUsers);
             }
+
             await semofor.WaitAsync();
             try
             {
-                if (cache.TryGetValue(new UsersInEventCacheKey(idEvent), out idUsers))
+                if (cache.TryGetValue(cacheKey, out idUsers))
                 {
-                    var users = await userService.GetPreviewUsers(idUsers);
-                    return users;
+                    if (idUsers == null)
+                        return null;
+
+                    if (idUsers.Count == 0)
+                        return new();
+
+                    return await userService.GetPreviewUsers(idUsers);
                 }
                 var listIdUsersInEvent = await userService.GetIdUsersDB(idEvent);
-                if (listIdUsersInEvent != null)
+                if (listIdUsersInEvent == null)
                 {
-                    cache.Set(new UsersInEventCacheKey(idEvent), listIdUsersInEvent, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(60)));
-                    var users = await userService.GetPreviewUsers(listIdUsersInEvent);
-                    return users;
+                    cache.Set(cacheKey, listIdUsersInEvent , TimeSpan.FromMinutes(5));
+                    return null;
                 }
-                cache.Set(new UsersInEventCacheKey(idEvent), listIdUsersInEvent, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(60))); // если null
+                cache.Set(cacheKey, listIdUsersInEvent, TimeSpan.FromMinutes(60));
+                if (listIdUsersInEvent.Count == 0)
+                    return new();
+                return await userService.GetPreviewUsers(listIdUsersInEvent!);
             }
             finally
             {
                 semofor.Release();
             }
-            return null;
-
         }
+
 
         /// <summary>
         /// Данный метод использует два запроса из-за дублирования строк события на каждую строку пользователя
         /// </summary>
-        public async Task<EventWithUsersDTO> GetEventsWithUserAsync(int idEvent)
+        public async Task<EventWithUsersDTO?> GetEventsWithUserAsync(int idEvent)
         {
-            IQueryable<Event> quaryable = eventRepository.GetAllEventsQueryable();
-            var ev = mapper.Map<EventWithUsersDTO>(await eventService.GetPublichEventByIdAsync(idEvent));
-            var users = await GetUsersEventAsync(idEvent);
-            ev.UsersRegistered = users.Take(ev.MaxParticipants).ToList();
-            ev.UsersInReserve = users.Skip(ev.MaxParticipants).ToList();
-            return ev;
+            var ev = await eventService.GetPublichEventByIdAsync(idEvent);
+            if(ev == null)
+                return null;
+            var evView = mapper.Map<EventWithUsersDTO>(ev);
+            var users = await GetUsersEventAsync(idEvent) ?? new();
+            evView.Users = users;
+            return evView;
         }
+
+
         public record UsersInEventCacheKey(int idEvent);
     }
 }

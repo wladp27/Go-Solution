@@ -21,15 +21,23 @@ namespace GoWeb.Shared.Features.TypeEvent.Handlers
                     var errorMessage = $"Ошибка сервера: {httpResponse.StatusCode} ({(int)httpResponse.StatusCode})";
                     throw new Exception(errorMessage);
                 }
-                return await httpResponse.Content.ReadFromJsonAsync<GetTypeEventsForCityRequest.Response>(cancellationToken: cancellationToken);
+                var content = await httpResponse.Content.ReadFromJsonAsync<GetTypeEventsForCityRequest.Response>(cancellationToken: cancellationToken);
+                if(content!=null)
+                {
+                    return content;
+                }
+                else
+                {
+                    throw new Exception("Ошибка при получении данных с сервера.");
+                }
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException)
             {
                 throw new Exception("Не удалось подключиться к серверу. Проверьте сеть.");
             }
             catch (Exception ex)
             {
-                throw;
+                throw new Exception(ex.Message);
             }
         }
     }

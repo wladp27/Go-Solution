@@ -6,7 +6,7 @@ namespace GoWeb.Shared.Requests
 {
     public record GetEventRequest(int idEvent) : IRequest<GetEventRequest.Response>
     {
-        public const string RouteTemplate = "/api/Events/EventSummary/{id}";
+        public const string RouteTemplate = "/api/event/EventSummary/{id}";
         public record Response(EventSummaryDTO eventSummary);
 
     }

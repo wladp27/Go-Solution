@@ -1,5 +1,5 @@
 ﻿using GoWeb.Models;
-using GoWeb.Сonstants;
+using GoWeb.Shared.Сonstants;
 using GoWebApplication.Db.Models;
 
 namespace GoWeb.Interfaces

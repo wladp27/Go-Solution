@@ -23,6 +23,7 @@
 	<ItemGroup>
 		<Folder Include="Features\Auth\Components\" />
 		<Folder Include="Features\City\Components\" />
+		<Folder Include="Features\Location\Components\" />
 		<Folder Include="Features\TypeEvent\Pages\" />
 	</ItemGroup>
 

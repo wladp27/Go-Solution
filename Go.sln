@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.5.11619.145 insiders
+VisualStudioVersion = 18.5.11619.145
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoWeb", "GoWeb\GoWeb.csproj", "{041F8CBE-2B9B-005B-8674-69957C9CF109}"
 EndProject
