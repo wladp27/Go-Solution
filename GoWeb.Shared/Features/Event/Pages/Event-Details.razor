@@ -1,5 +1,6 @@
 ﻿@using System.Security.Claims
 @using BootstrapBlazor.Components
+@using GoWeb.Shared.Features.Effects
 @using GoWeb.Shared.Features.Event.Components.Event_Details
 @using GoWeb.Shared.Features.Shared
 
@@ -17,17 +18,10 @@
 <div class="container py-4">
     @if (isLoading)
     {
-        <!-- Индикатор загрузки -->
-        <div class="text-center my-5 py-5">
-            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-                <span class="visually-hidden">Загрузка...</span>
-            </div>
-            <p class="text-muted mt-2">Загружаем информацию о событии...</p>
-        </div>
+        <Loader Message="Загружаем информацию о событии.."></Loader>
     }
     else if (currentEvent == null)
     {
-        <!-- Ошибка, если событие не найдено -->
         <div class="my-5">
             <StatusMessage Message="Событие не найдено или было удалено" Icon="bi-calendar-x" />
             <div class="text-center mt-3">
@@ -45,13 +39,10 @@
 
         <HeaderEvent currentEvent="currentEvent"></HeaderEvent>
 
-        <!-- Основной контент (Две колонки) -->
         <div class="row g-4">
-
             <div class="col-lg-8">
                         <Details currentEvent="currentEvent"></Details>
              </div>
-
             <div class="col-lg-4">
                 <div class="card shadow-sm border-0 sticky-top" style="top: 20px; z-index: 10;">
                     <div class="card-body p-4">
