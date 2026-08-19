@@ -27,7 +27,7 @@ namespace Go.Mobile
             builder.Services.AddScoped<AuthenticationStateProvider>(provider =>
                 provider.GetRequiredService<AuthenticationStateProviderCustom>());
             builder.Services.AddScoped<AuthorizationMessageHandler>();
-            builder.Services.AddHttpClient("TokenAPIClient", client => client.BaseAddress = new Uri("http://http://201.34.131.23:8080")).AddHttpMessageHandler<AuthorizationMessageHandler>();
+            builder.Services.AddHttpClient("TokenAPIClient", client => client.BaseAddress = new Uri("http://201.34.131.23:8080")).AddHttpMessageHandler<AuthorizationMessageHandler>();
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://201.34.131.23:8080") });
             builder.Services.AddMediatR(cfg =>
             {
