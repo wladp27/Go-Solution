@@ -103,6 +103,7 @@
     {
         if (OnClick.HasDelegate)
         {
+            var a=HttpClient.BaseAddress + SelectedEvent.ImagePath;
             await OnClick.InvokeAsync(SelectedEvent);
         }
     }
