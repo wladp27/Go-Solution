@@ -16,7 +16,7 @@ namespace GoWeb.Mapping
             CreateMap<Event, EventSummaryDTO>()
              .ForMember(dest => dest.OrganizerName, opt => opt.MapFrom(x => x.Organizer.DisplayName))
              .ForMember(dest=>dest.CountRegisteredUsers, opt=> opt.MapFrom(x=>x.UserEvents.Where(u=>u.StatusJoiningId==(int)JoiningStatus.Registered).Count()))
-             .ForMember(dest=>dest.ImagePath, opt=> opt.MapFrom(x=> string.IsNullOrEmpty(x.ImagePath) ? "/images/eventsTypes/" + "volleyball.jpg" : "/images/events/" + x.ImagePath));
+             .ForMember(dest=>dest.ImagePath, opt=> opt.MapFrom(x=> string.IsNullOrEmpty(x.ImagePath) ? "/images/eventsTypes/" + "volleyball.jpg" : "images/events/" + x.ImagePath));
 
             CreateMap<EventWithUsersDTO, EventSummaryDTO>();
             CreateMap<EventSummaryDTO, EventWithUsersDTO>();
