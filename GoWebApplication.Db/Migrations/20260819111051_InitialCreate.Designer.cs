@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GoWebApplication.Db.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260809143159_InitialCreate")]
+    [Migration("20260819111051_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace GoWebApplication.Db.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.10")
+                .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
@@ -232,13 +232,13 @@ namespace GoWebApplication.Db.Migrations
                         new
                         {
                             Id = 1,
-                            ImagePath = "/images/eventsTypes/BeachVolleyball.jpg",
+                            ImagePath = "хуй.jpg",
                             Name = "Пляжный волейбол"
                         },
                         new
                         {
                             Id = 2,
-                            ImagePath = "/images/eventsTypes/volleyball.jpg",
+                            ImagePath = "хуй.jpg",
                             Name = "Волейбол"
                         });
                 });
@@ -578,6 +578,29 @@ namespace GoWebApplication.Db.Migrations
                     b.HasIndex("idCity");
 
                     b.ToTable("users", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "a1b2c3d4-e5f6-7890-abcd-ef0123456789",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "22222222-3333-4444-5555-666666666666",
+                            DisplayName = "Админчик",
+                            Email = "admin@goweb.com",
+                            EmailConfirmed = true,
+                            IsDeleted = false,
+                            LockoutEnabled = false,
+                            NormalizedEmail = "ADMIN@GOWEB.COM",
+                            NormalizedUserName = "ADMIN",
+                            PasswordHash = "AQAAAAIAAYagAAAAEG4K9Vp0ZfN4Gg2kM/1k4N1Lg8k6q6R6q6R6q6R6q6R6q6R6q6==",
+                            PhoneNumberConfirmed = false,
+                            RegistrationDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            ReliabilityVisit = 100.0,
+                            SecurityStamp = "11111111-2222-3333-4444-555555555555",
+                            TwoFactorEnabled = false,
+                            UserName = "admin",
+                            idCity = 1
+                        });
                 });
 
             modelBuilder.Entity("GoWebApplication.Db.Models.UserEvent", b =>

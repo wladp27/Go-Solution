@@ -493,8 +493,8 @@ namespace GoWebApplication.Db.Migrations
                 columns: new[] { "id", "image_path", "name" },
                 values: new object[,]
                 {
-                    { 1, "BeachVolleyball.jpg", "Пляжный волейбол" },
-                    { 2, "volleyball.jpg", "Волейбол" }
+                    { 1, "хуй.jpg", "Пляжный волейбол" },
+                    { 2, "хуй.jpg", "Волейбол" }
                 });
 
             migrationBuilder.InsertData(
@@ -528,6 +528,11 @@ namespace GoWebApplication.Db.Migrations
                     { 1, "Набережная реки Волги, пляж у Ладьи", 1, "Популярная открытая площадка для пляжного волейбола на самарской набережной.", 53.210123000000003, 50.131456 },
                     { 2, "ул. Чернышевского, 63", 2, "Крытый спортивный зал для классического волейбола.", 51.540123000000001, 46.051456000000002 }
                 });
+
+            migrationBuilder.InsertData(
+                table: "users",
+                columns: new[] { "id", "AccessFailedCount", "birth_date", "ConcurrencyStamp", "display_name", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "registration_date", "reliability_visit", "SecurityStamp", "time_deleted", "TwoFactorEnabled", "UserName", "id_city" },
+                values: new object[] { "a1b2c3d4-e5f6-7890-abcd-ef0123456789", 0, null, "22222222-3333-4444-5555-666666666666", "Админчик", "admin@goweb.com", true, false, null, "ADMIN@GOWEB.COM", "ADMIN", "AQAAAAIAAYagAAAAEG4K9Vp0ZfN4Gg2kM/1k4N1Lg8k6q6R6q6R6q6R6q6R6q6R6q6==", null, false, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 100.0, "11111111-2222-3333-4444-555555555555", null, false, "admin", 1 });
 
             migrationBuilder.InsertData(
                 table: "Events",
