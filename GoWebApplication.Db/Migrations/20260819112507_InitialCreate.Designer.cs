@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GoWebApplication.Db.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260819111051_InitialCreate")]
+    [Migration("20260819112507_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
