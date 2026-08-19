@@ -493,8 +493,8 @@ namespace GoWebApplication.Db.Migrations
                 columns: new[] { "id", "image_path", "name" },
                 values: new object[,]
                 {
-                    { 1, "/images/eventsTypes/BeachVolleyball.jpg", "Пляжный волейбол" },
-                    { 2, "/images/eventsTypes/volleyball.jpg", "Волейбол" }
+                    { 1, "BeachVolleyball.jpg", "Пляжный волейбол" },
+                    { 2, "volleyball.jpg", "Волейбол" }
                 });
 
             migrationBuilder.InsertData(
