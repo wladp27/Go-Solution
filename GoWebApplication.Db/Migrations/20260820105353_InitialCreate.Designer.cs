@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GoWebApplication.Db.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260820103507_InitialCreate")]
+    [Migration("20260820105353_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -578,29 +578,6 @@ namespace GoWebApplication.Db.Migrations
                     b.HasIndex("idCity");
 
                     b.ToTable("users", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "a1b2c3d4-e5f6-7890-abcd-ef0123456789",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "22222222-3333-4444-5555-666666666666",
-                            DisplayName = "Админчик",
-                            Email = "admin@goweb.com",
-                            EmailConfirmed = true,
-                            IsDeleted = false,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "ADMIN@GOWEB.COM",
-                            NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEMQjih5OJ6JS3uGAiF28V3hh0maL2ReJYuguUGAXSLB6kzSSNsskZfrE628DWgYGpQ==",
-                            PhoneNumberConfirmed = false,
-                            RegistrationDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            ReliabilityVisit = 100.0,
-                            SecurityStamp = "11111111-2222-3333-4444-555555555555",
-                            TwoFactorEnabled = false,
-                            UserName = "admin",
-                            idCity = 1
-                        });
                 });
 
             modelBuilder.Entity("GoWebApplication.Db.Models.UserEvent", b =>

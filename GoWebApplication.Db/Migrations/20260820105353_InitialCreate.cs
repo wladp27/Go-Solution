@@ -530,11 +530,6 @@ namespace GoWebApplication.Db.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "users",
-                columns: new[] { "id", "AccessFailedCount", "birth_date", "ConcurrencyStamp", "display_name", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "registration_date", "reliability_visit", "SecurityStamp", "time_deleted", "TwoFactorEnabled", "UserName", "id_city" },
-                values: new object[] { "a1b2c3d4-e5f6-7890-abcd-ef0123456789", 0, null, "22222222-3333-4444-5555-666666666666", "Админчик", "admin@goweb.com", true, false, null, "ADMIN@GOWEB.COM", "ADMIN", "AQAAAAIAAYagAAAAEMQjih5OJ6JS3uGAiF28V3hh0maL2ReJYuguUGAXSLB6kzSSNsskZfrE628DWgYGpQ==", null, false, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 100.0, "11111111-2222-3333-4444-555555555555", null, false, "admin", 1 });
-
-            migrationBuilder.InsertData(
                 table: "Events",
                 columns: new[] { "id", "CityId", "count_days_recreate", "end_time", "event_description", "event_name", "event_type_id", "image_path", "location_id", "max_participants", "min_participants", "organizer_id", "price", "start_time", "status_event_id" },
                 values: new object[,]
