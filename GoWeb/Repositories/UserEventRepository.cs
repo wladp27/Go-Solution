@@ -117,7 +117,7 @@ namespace GoWeb.Repositories
                 .Select(u => 
                             new
                                 {
-                                    RequiredRating = u.Ratings.Any(r =>(r.EventTypeId == ev.EventTypeId && r.Value >= ev.RequiredRating)|| ev.RequiredRating == 0),
+                                    RequiredRating = u.Ratings.Any(r =>r.EventTypeId == ev.EventTypeId && r.Value >= ev.RequiredRating) || ev.RequiredRating == 0,
                                     BookedForAnotherTime = u.UserEvents.Any(ue =>
                                                                     ue.EventId != idEvent
                                                                     && ue.Event.StatusEventId == (int)StatusEventConts.Published
