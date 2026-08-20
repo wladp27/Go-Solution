@@ -1,0 +1,16 @@
+﻿@if (!string.IsNullOrEmpty(Title))
+{
+	<h7>@Title</h7>
+}
+
+<div class=" mb-4 ">
+	<div class="row g-3">
+		@ChildContent
+	</div>
+</div>
+@code {
+	[Parameter]
+	public string Title { get; set; } = default!;
+    [Parameter, EditorRequired]
+	public RenderFragment ChildContent { get; set; } = default!;
+}

@@ -1,0 +1,67 @@
+﻿@using GoWeb.Shared.Model
+@using GoWeb.Shared.Models
+<div class="card shadow border-0 rounded-4 p-4 bg-white">
+    <EditForm Model="@eventForm" OnValidSubmit="SubmitForm">
+     <DataAnnotationsValidator />
+         <FormSection>
+                <div class="col-md-6">
+                    <label class="form-label">Название события</label>
+                    <InputText @bind-Value="eventForm.EventName" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Стоимость участия</label>
+                    <InputNumber @bind-Value="eventForm.Price" class="form-control" />
+                </div>
+        </FormSection>
+        <FormSection Title="Требуемый рейтинг">
+            <InputNumber @bind-Value="eventForm.RequiredRating" class="form-control" />
+        </FormSection>
+        <FormSection Title="Описание события">
+            <InputTextArea @bind-Value="eventForm.EventDescription" rows="6" class="form-control" id="trailDescription" />
+        </FormSection>
+        <FormSection >
+            <div class="col-md-6">
+                
+             </div>
+            <div class="col-md-6">
+                <label class="form-label">Статус события</label>
+                <InputSelect @bind-Value="eventForm.EventTypeId" class="form-select">
+                    <option value=0>--Выбрать--</option>
+                    @foreach (var status in statusEventsDTO ?? new())
+                    {
+                        <option value="@status.Id">@status.Status</option>
+                    }
+                </InputSelect>
+            </div>
+        </FormSection>
+
+     </EditForm>
+     <FormSection>
+         <div class="col-md-6">
+            <label class="form-label">Мин. участников</label>
+            <InputNumber @bind-Value="eventForm.MinParticipants" class="form-control" />
+         </div>
+        <div class="col-md-6">
+            <label class="form-label">Макс. участников</label>
+            <InputNumber @bind-Value="eventForm.MaxParticipants" class="form-control" />
+        </div>
+      </FormSection>
+
+
+
+</div>
+
+
+
+@code {
+    [Parameter]
+    public EventDTO? Event { get; set; }
+    [Parameter]
+    public Func<EventDTO, IBrowserFile?, Task> OnSubmit { get; set; }
+
+    private List<StatusEventsDTO> statusEventsDTO { get; set; } = new List<StatusEventsDTO>();
+    private List<CityDTO> cities { get; set; } = new List<CityDTO>();
+    private EventDTO eventForm { get; set; } = new EventDTO();
+    private IBrowserFile? eventImage { get; set; }
+    private async Task SubmitForm() => await OnSubmit(eventForm, eventImage);
+}

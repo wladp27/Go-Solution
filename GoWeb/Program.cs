@@ -220,38 +220,38 @@ app.MapControllerRoute(
 
 
 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var userManager = services.GetRequiredService<IUserRepository>();
-    var dbContext = services.GetRequiredService<ApplicationDbContext>();
+//using (var scope = app.Services.CreateScope())
+//{
+//    var services = scope.ServiceProvider;
+//    var userManager = services.GetRequiredService<IUserRepository>();
+//    var dbContext = services.GetRequiredService<ApplicationDbContext>();
 
 
-    dbContext.Database.Migrate();
+//    dbContext.Database.Migrate();
 
-    string adminEmail = "admin@goweb.com";
-    if (await userManager.FindByEmailAsync(adminEmail) == null)
-    {
-        var admin = new User
-        {
-            UserName = "admin",
-            Email = adminEmail,
-            EmailConfirmed = true,
-            DisplayName = "Админчик",
-            idCity = 1 // Убедись, что ID города существует
-        };
+//    string adminEmail = "admin@goweb.com";
+//    if (await userManager.FindByEmailAsync(adminEmail) == null)
+//    {
+//        var admin = new User
+//        {
+//            UserName = "admin",
+//            Email = adminEmail,
+//            EmailConfirmed = true,
+//            DisplayName = "Админчик",
+//            idCity = 1 // Убедись, что ID города существует
+//        };
 
-        var result = await userManager.CreateAsync(admin, "Password123!");
-        if (result.Succeeded)
-        {
-            Console.WriteLine("Админ создан успешно");
-        }
-        else
-        {
-            Console.WriteLine($"Ошибка: {string.Join(", ", result.Errors.Select(e => e.Description))}");
-        }
-    }
-}
+//        var result = await userManager.CreateAsync(admin, "Password123!");
+//        if (result.Succeeded)
+//        {
+//            Console.WriteLine("Админ создан успешно");
+//        }
+//        else
+//        {
+//            Console.WriteLine($"Ошибка: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+//        }
+//    }
+//}
 
 
 app.Run();

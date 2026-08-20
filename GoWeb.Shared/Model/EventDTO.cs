@@ -1,10 +1,13 @@
 ﻿using GoWeb.Shared.Models;
-using GoWeb.Сonstants;
+using GoWeb.Shared.Сonstants;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 
-namespace GoWeb.Models
+namespace GoWeb.Shared.Model
 {
-    public class EventCreateUpdateViewModel : IValidatableObject
+    public class EventDTO : IValidatableObject
     {
         public int? Id { get; set; }
 
@@ -17,21 +20,21 @@ namespace GoWeb.Models
         [Display(Name = "Описание события")]
         public string? EventDescription { get; set; }
 
-        public LocationCreateViewModel? Location { get; set; }
+        public LocationDTO? Location { get; set; }
 
         public int? LocationId { get; set; }
 
 
         [Required(ErrorMessage = "Пожалуйста, введите рейтинг события")]
         [Display(Name = "Рейтинг события")]
-        [Range(0,100, ErrorMessage = "Рейтинг события в пределах от 0 до 100")]
-        public int RequiredRating {  get; set; }
+        [Range(0, 100, ErrorMessage = "Рейтинг события в пределах от 0 до 100")]
+        public int RequiredRating { get; set; }
 
         [Required(ErrorMessage = "Пожалуйста, дату и время начала события")]
         [Display(Name = "Дата и время начала события")]
         [DataType(DataType.DateTime)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
-        public DateTimeOffset StartTime { get; set; }=DateTimeOffset.Now.AddMinutes(2);
+        public DateTimeOffset StartTime { get; set; } = DateTimeOffset.Now.AddMinutes(2);
 
         [Required(ErrorMessage = "Пожалуйста, дату и время окончания события")]
         [Display(Name = "Дата и время окончания события")]
@@ -56,8 +59,9 @@ namespace GoWeb.Models
 
         [Display(Name = "Тип события")]
         public int? EventTypeId { get; set; }
-        
-        
+
+        [Required(ErrorMessage = "Пожалуйста,добавьте изображение для события")]
+        [Display(Name = "Изображение превью события")]
         public string? ImagePath { get; set; }
 
         [AllowedValues((int)StatusEventConts.Published, (int)StatusEventConts.Draft, ErrorMessage = "Выбран недопустимый ID уровня доступа.")]
@@ -70,13 +74,10 @@ namespace GoWeb.Models
         [Range(1, int.MaxValue, ErrorMessage = "Количество дней должно быть больше 0")]
         public int? CountDaysRecreate { get; set; }
 
+        public ImageAction imageAction { get; set; }
 
+        public string? Address { get; set; }
 
-        public string? Address {  get; set; }
-
-        [Required(ErrorMessage = "Пожалуйста,добавьте изображение для события")]
-        [Display(Name = "Изображение превью события")]
-        public IFormFile? ImageFile { get; set; }
         public List<EventTypeDTO>? EventTypes { get; set; }
         public List<StatusEventsDTO>? StatusEvents { get; set; }
 
@@ -95,14 +96,18 @@ namespace GoWeb.Models
 
             if (LocationId == null)
             {
-                if (Location == null || Location.LocationLatitude == default(double) || Location.LocationLongitude == default(double) 
-                    || Location.Address==null || Location.CityId==null)
+                if (Location == null || Location.LocationLatitude == default(double) || Location.LocationLongitude == default(double)
+                    || Location.Address == null || Location.CityId == null)
                     yield return new ValidationResult("Выберите локацию или создайте новую локацию", new[] { "Address" });
             }
-
-
-            
-
         }
+
+        public enum ImageAction
+        {
+            None,
+            Add,
+            Remove
+        }
+
     }
 }

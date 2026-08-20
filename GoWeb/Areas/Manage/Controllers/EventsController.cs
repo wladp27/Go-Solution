@@ -121,13 +121,13 @@ namespace GoWeb.Areas.Manage.Controllers
 
             var selectListTypeEvent = listEventType;
 
-            var selectListStatusEvent = new List<StatusEventsViewModel> {
-                                                        new StatusEventsViewModel
+            var selectListStatusEvent = new List<StatusEventsDTO> {
+                                                        new StatusEventsDTO
                                                         {
                                                             Status = "Опубиковано",
                                                             Id = (int)StatusEventConts.Published
                                                         },
-                                                        new StatusEventsViewModel
+                                                        new StatusEventsDTO
                                                         {
                                                             Status = "Черновик",
                                                             Id = (int)StatusEventConts.Draft
@@ -167,13 +167,13 @@ namespace GoWeb.Areas.Manage.Controllers
 
             var selectListTypeEvent = listEventType;
 
-            var selectListStatusEvent = new List<StatusEventsViewModel> {
-                                                        new StatusEventsViewModel
+            var selectListStatusEvent = new List<StatusEventsDTO> {
+                                                        new StatusEventsDTO
                                                         {
                                                             Status = "Опубиковано",
                                                             Id = (int)StatusEventConts.Published
                                                         },
-                                                        new StatusEventsViewModel
+                                                        new StatusEventsDTO
                                                         {
                                                             Status = "Черновик",
                                                             Id = (int)StatusEventConts.Draft

@@ -1,4 +1,5 @@
 ﻿@using BootstrapBlazor.Components
+@using GoWeb.Shared.Сonstants
 <div class="swipe-area" @ontouchstart="HandleTouchStart" @ontouchend="HandleTouchEnd"></div>
 
 
@@ -36,7 +37,13 @@
     {
         Icon = "bi bi-calendar2-heart",
         Url="/my-events"
+    },
+    new MenuItem()
+    {
+        Icon = "bi bi-calendar-plus",
+        Url=Routes.CreateEvent
     }
+
     // new MenuItem()
     // {
     //     Text = "Настройки",
