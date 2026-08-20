@@ -47,13 +47,13 @@ namespace GoWebApplication.Db.Data.Configurations
             {
                 Id = 1,
                 Name = "Пляжный волейбол",
-                ImagePath = "хуй.jpg"
+                ImagePath = "BeachVolleyball.jpg"
             },
             new EventType
             {
                 Id = 2,
                 Name = "Волейбол",
-                ImagePath = "хуй.jpg"
+                ImagePath = "volleyball.jpg"
             }
         );
         }
