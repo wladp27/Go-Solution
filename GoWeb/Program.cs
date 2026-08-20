@@ -222,26 +222,36 @@ app.MapControllerRoute(
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var services = scope.ServiceProvider;
+    var userManager = services.GetRequiredService<UserRepository>();
+    var dbContext = services.GetRequiredService<ApplicationDbContext>();
 
 
-    var retries = 5;
-    while (retries > 0)
+    dbContext.Database.Migrate();
+
+    string adminEmail = "admin@goweb.com";
+    if (await userManager.FindByEmailAsync(adminEmail) == null)
     {
-        try
+        var admin = new User
         {
-            db.Database.Migrate();
-            break;
-        }
-        catch (Exception ex)
-        {
-            retries--;
-            if (retries == 0) throw;
+            UserName = "admin",
+            Email = adminEmail,
+            EmailConfirmed = true,
+            DisplayName = "Админчик",
+            idCity = 1 // Убедись, что ID города существует
+        };
 
-            Console.WriteLine($"База еще не готова, ждем 3 секунды... Ошибка: {ex.Message}");
-            Thread.Sleep(3000);
+        var result = await userManager.CreateAsync(admin, "Password123!");
+        if (result.Succeeded)
+        {
+            Console.WriteLine("Админ создан успешно");
+        }
+        else
+        {
+            Console.WriteLine($"Ошибка: {string.Join(", ", result.Errors.Select(e => e.Description))}");
         }
     }
 }
+
 
 app.Run();

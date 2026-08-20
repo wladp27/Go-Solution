@@ -81,25 +81,7 @@ namespace GoWebApplication.Db.Data.Configurations
                     .HasForeignKey(r => r.UserId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasData(
-                new User
-                {
-                    Id = "a1b2c3d4-e5f6-7890-abcd-ef0123456789",
-                    UserName = "admin",
-                    NormalizedUserName = "ADMIN",
-                    Email = "admin@goweb.com",
-                    NormalizedEmail = "ADMIN@GOWEB.COM",
-                    EmailConfirmed = true,
-                    PasswordHash = new PasswordHasher<User>().HashPassword(null, "Password123!"),
-                    SecurityStamp = "11111111-2222-3333-4444-555555555555",
-                    ConcurrencyStamp = "22222222-3333-4444-5555-666666666666",
-                    DisplayName = "Админчик",
-                    ReliabilityVisit = 100,
-                    RegistrationDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-                    IsDeleted = false,
-                    idCity = 1
-                }
-            );
+        
 
 
         }

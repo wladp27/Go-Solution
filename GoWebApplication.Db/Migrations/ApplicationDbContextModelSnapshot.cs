@@ -589,7 +589,7 @@ namespace GoWebApplication.Db.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@GOWEB.COM",
                             NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEG4K9Vp0ZfN4Gg2kM/1k4N1Lg8k6q6R6q6R6q6R6q6R6q6R6q6==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEMQjih5OJ6JS3uGAiF28V3hh0maL2ReJYuguUGAXSLB6kzSSNsskZfrE628DWgYGpQ==",
                             PhoneNumberConfirmed = false,
                             RegistrationDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             ReliabilityVisit = 100.0,
