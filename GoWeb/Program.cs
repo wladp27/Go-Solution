@@ -223,7 +223,7 @@ app.MapControllerRoute(
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    var userManager = services.GetRequiredService<UserRepository>();
+    var userManager = services.GetRequiredService<IUserRepository>();
     var dbContext = services.GetRequiredService<ApplicationDbContext>();
 
 
