@@ -1,0 +1,78 @@
+﻿@using System.Diagnostics.CodeAnalysis
+@using BootstrapBlazor.Components
+@using GoWeb.Shared.Models
+@using GoWeb.Shared.Requests
+@using MediatR
+
+@inject IMediator mediator
+@inject ToastService toastService
+@inherits InputBase<int>
+
+
+<div class="input-popup-container">
+    <input class="form-control @CssClass" type="text" min="0" max="59"
+    @onchange="SearchType" disabled ="@disabled" value="@searchTypeEvent" />
+
+    @if(!disabled)
+    {
+        if (filteredTypes != null && filteredTypes.Count!=0)
+        {
+            <div class="custom-popup-box">
+                @foreach (var type in filteredTypes)
+                {
+                    <div class="p-2 hover-item" style="cursor: pointer;" @onclick=> SelectType(type)> @type.Name  </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="p-2 hover-item" style="cursor: pointer;"> Результатов не найдено</div>
+        }
+    }
+   
+
+</div>
+
+@code {
+
+    private string? searchTypeEvent;
+    private List<EventTypeDTO> eventTypes { get; set; } = default!;
+    private bool disabled;
+    private List<EventTypeDTO> filteredTypes = default!;
+
+    protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out int result, [NotNullWhen(false)] out string validationErrorMessage)
+    {
+        throw new NotImplementedException();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await mediator.Send(new GetAllTypesEventsRequest());
+        if(response.IsSuccess)
+        {
+            eventTypes = response.Types?? new();
+        }
+        else
+        {
+            await toastService.Error("Ошибка", response.Message ?? "Не удалось загрузить типы событий");
+            disabled = true;
+            searchTypeEvent = "Ошибка загрузки";
+        }
+    }
+    private void SearchType(ChangeEventArgs args)
+    {   
+        if (!disabled)
+        {
+            searchTypeEvent = args.Value?.ToString() ?? "";
+            filteredTypes = eventTypes.Where(t => t.Name.Contains(searchTypeEvent, StringComparison.OrdinalIgnoreCase)).Take(5).ToList();
+
+        }
+    }
+
+    private void SelectType(EventTypeDTO eventTypeDTO)
+    {
+        CurrentValue = eventTypeDTO.Id;
+    }
+   
+
+}

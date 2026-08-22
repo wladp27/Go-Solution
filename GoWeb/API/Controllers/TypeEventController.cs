@@ -8,9 +8,11 @@ namespace GoWeb.API.Controllers
     public class TypeEventController : ControllerBase
     {
         private readonly IEventService eventService;
-        public TypeEventController(IEventService eventService)
+        private readonly IEventTypeService eventTypeService;
+        public TypeEventController(IEventService eventService, IEventTypeService eventTypeService)
         {
             this.eventService = eventService;
+            this.eventTypeService = eventTypeService;
         }
 
         [HttpGet(GetTypeEventsForCityRequest.RouteTemplate)]
@@ -21,5 +23,15 @@ namespace GoWeb.API.Controllers
                 return new GetTypeEventsForCityRequest.Response(listTypes);
             return NotFound();
         }
+
+        [HttpGet(GetAllTypesEventsRequest.RouteTemplate)]
+        public async Task<ActionResult<GetAllTypesEventsRequest.Response>>GetAllTypes()
+        {
+            var listTypes = await eventTypeService.GetAllAsync();
+            if (listTypes != null)
+                return new GetAllTypesEventsRequest.Response(true,null,listTypes);
+            return NotFound(new GetAllTypesEventsRequest.Response(false, "Types not found", new()));
+        }
+
     }
 }

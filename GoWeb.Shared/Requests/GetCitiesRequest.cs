@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GoWeb.Shared.Requests
 {
-    public class GetCitiesRequest: IRequest<GetCitiesRequest.Response>
+    public record GetCitiesRequest: IRequest<GetCitiesRequest.Response>
     {
         public const string RouteTemplate = "/api/Cities";
         public record Response(List<CityDTO> Cities);

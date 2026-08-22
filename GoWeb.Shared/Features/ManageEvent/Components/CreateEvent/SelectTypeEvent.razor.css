@@ -1,0 +1,19 @@
+﻿
+.input-popup-container {
+    position: relative;
+    width: 100%;
+}
+
+.custom-popup-box {
+    position: absolute;
+    top: 100%; 
+    left: 0;
+    width: 100%;
+    z-index: 1000; 
+    margin-top: 4px; 
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem; 
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); 
+    padding: 0.5rem;
+}

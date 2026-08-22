@@ -4,7 +4,7 @@ namespace GoWeb.Shared.Models
 {
     public class EventTypeDTO
     {
-        public int? Id { get; set; }
+        public int Id { get; set; }
 
 
         [Required (ErrorMessage ="Пожалуйста, введите название типа события")]

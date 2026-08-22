@@ -58,7 +58,7 @@ namespace GoWeb.Shared.Model
         public string? OrganizerId { get; set; } = string.Empty;
 
         [Display(Name = "Тип события")]
-        public int? EventTypeId { get; set; }
+        public int EventTypeId { get; set; }
 
         [Required(ErrorMessage = "Пожалуйста,добавьте изображение для события")]
         [Display(Name = "Изображение превью события")]

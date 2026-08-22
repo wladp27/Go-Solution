@@ -21,11 +21,11 @@
         </FormSection>
         <FormSection >
             <div class="col-md-6">
-                
+                <SelectTypeEvent @bind-Value="eventForm.EventTypeId"></SelectTypeEvent>
              </div>
             <div class="col-md-6">
                 <label class="form-label">Статус события</label>
-                <InputSelect @bind-Value="eventForm.EventTypeId" class="form-select">
+                <InputSelect @bind-Value="eventForm.StatusEventId" class="form-select">
                     <option value=0>--Выбрать--</option>
                     @foreach (var status in statusEventsDTO ?? new())
                     {
