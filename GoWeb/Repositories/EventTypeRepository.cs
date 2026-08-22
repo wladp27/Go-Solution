@@ -13,23 +13,11 @@ namespace GoWeb.Repositories
             this.context = context;
         }
 
-        public async Task<int?> AddAsync(EventType eventType)
+        public async Task<int> AddAsync(EventType eventType)
         {
-            try
-            {
-                await context.EventTypes.AddAsync(eventType);
-                var rowsAffected = await context.SaveChangesAsync();
-                if (rowsAffected > 0)
-                {
-                    return eventType.Id;
-                }
-                return null;
-            }
-            catch (Exception ex)
-            {
-                return null;
-            }
-
+            context.EventTypes.Add(eventType);
+            await context.SaveChangesAsync();
+            return eventType.Id;
         }
 
         public async Task<bool> DeleteAsync(EventType eventType)

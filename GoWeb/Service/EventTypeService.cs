@@ -26,7 +26,7 @@ namespace GoWeb.Service
             eventTypeView.Id = await eventTypeRepository.AddAsync(mapper.Map<EventType>(eventTypeView));
             if (eventTypeView.Id != null)
             {
-                cache.Set(new EventTypeCacheKey(eventTypeView.Id.Value),eventTypeView);
+                cache.Set(new EventTypeCacheKey(eventTypeView.Id),eventTypeView);
                 return true;
             }
             return false;
@@ -37,7 +37,7 @@ namespace GoWeb.Service
             var successDelete= await eventTypeRepository.DeleteAsync(mapper.Map<EventType>(eventType));
             if(successDelete)
             {
-                cache.Remove(new EventTypeCacheKey(eventType.Id.Value));
+                cache.Remove(new EventTypeCacheKey(eventType.Id));
                 return true;
             }
             return false;
@@ -105,7 +105,7 @@ namespace GoWeb.Service
             var successUpdate = await eventTypeRepository.Update(updateEventDb);
             if(successUpdate)
             {
-                cache.Set(new EventTypeCacheKey(eventTypeView.Id.Value), eventTypeView);
+                cache.Set(new EventTypeCacheKey(eventTypeView.Id), eventTypeView);
             }
             return false;
         }

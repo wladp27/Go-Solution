@@ -66,7 +66,7 @@ namespace GoWeb.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             {
-                var existingEventType = await eventTypeService.GetByIdAsync(eventTypeView.Id.Value);
+                var existingEventType = await eventTypeService.GetByIdAsync(eventTypeView.Id);
                 if (existingEventType == null)
                 {
                     ModelState.AddModelError(string.Empty, "Тип события не найден для обновления. Возможно,он был удален.");

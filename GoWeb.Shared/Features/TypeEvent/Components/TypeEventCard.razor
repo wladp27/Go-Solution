@@ -31,11 +31,9 @@
 
     private async Task HandleClick()
     {
-        if (typeEvent.Id!=null)
-        {
-            var a = httpClient.BaseAddress + typeEvent.ImagePath;
-            await OnClick.InvokeAsync(typeEvent.Id.Value);
-        }
-    }
 
+            var a = httpClient.BaseAddress + typeEvent.ImagePath;
+            await OnClick.InvokeAsync(typeEvent.Id);
+    }
 }
+
