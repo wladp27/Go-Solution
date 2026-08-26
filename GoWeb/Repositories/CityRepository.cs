@@ -16,18 +16,18 @@ namespace GoWeb.Repositories
             _context = context;
         }
 
-        public async Task<int?> AddAsync(City city)
+        public async Task<int> AddAsync(City city)
         {
             var existCityDb =  await ExistCity(city.NameCity);
             if(existCityDb)
             {
-                return null;
+                return 0;
             }
             await _context.Cities.AddAsync(city);
             var rowsAffected =  await _context.SaveChangesAsync();
             if (rowsAffected > 0)
                 return city.Id;
-            return null;
+            return 0;
         }
 
         public async Task<bool> DeleteAsync(City city)

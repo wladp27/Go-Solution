@@ -27,7 +27,7 @@ namespace GoWeb.Service
             cityView.Id = await cityRepository.AddAsync(mapper.Map<City>(cityView));
             if (cityView.Id != null)
             {
-                cache.Set(new CityCacheKey(cityView.Id.Value), cityView);
+                cache.Set(new CityCacheKey(cityView.Id), cityView);
                 return true;
             }
             return false;
@@ -40,7 +40,7 @@ namespace GoWeb.Service
             var successDelete = await cityRepository.DeleteAsync((mapper.Map<City>(city)));
             if (successDelete)
             {
-                cache.Remove(new CityCacheKey(city.Id.Value));
+                cache.Remove(new CityCacheKey(city.Id));
                 return true;
             }
             return false;
@@ -109,7 +109,7 @@ namespace GoWeb.Service
             var successUpdate = await cityRepository.Update(updateCityDb);
             if (successUpdate)
             {
-                cache.Set(new CityCacheKey(city.Id.Value), city);
+                cache.Set(new CityCacheKey(city.Id), city);
                 return true;
             }
             return false;
