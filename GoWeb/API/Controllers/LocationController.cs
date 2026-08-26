@@ -20,7 +20,7 @@ namespace GoWeb.API.Controllers
         }
         
         [HttpPost(CreateLocationRequest.RouteTemplate)]
-         public async Task<ActionResult<CreateLocationRequest.Response>> Create(LocationCreateDTO location)
+         public async Task<ActionResult<CreateLocationRequest.Response>> Create([FromBody] LocationCreateDTO location)
          {
             var locationDb = mapper.Map<LocationCreateDTO, Location>(location);
 

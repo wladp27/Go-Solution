@@ -1,4 +1,5 @@
 ﻿using GoWeb.Shared.Requests;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Net.Http.Json;
@@ -6,7 +7,7 @@ using System.Text;
 
 namespace GoWeb.Shared.Features.ManageEvent.Handlers
 {
-    public class CreateLocationHandler
+    public class CreateLocationHandler : IRequestHandler<CreateLocationRequest, CreateLocationRequest.Response>
     {
         private IHttpClientFactory httpClientFactory;
         public CreateLocationHandler(IHttpClientFactory httpClientFactory)

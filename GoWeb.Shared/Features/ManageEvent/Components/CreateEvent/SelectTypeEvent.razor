@@ -7,7 +7,7 @@
 
 @inject IMediator mediator
 @inject ToastService toastService
-@inherits InputBase<int>
+@inherits InputBase<int> 
 
 <SearchDropdown 
      SearchItems="SearchTypeEvent" 
@@ -20,7 +20,7 @@
 
 @code {
 
-    private string? searchTypeEvent;
+
     private List<EventTypeDTO> eventTypes { get; set; } = default!;
     private List<EventTypeDTO> filteredTypes = default!;
 
@@ -33,20 +33,24 @@
     }
 
 
-    private async Task<List<EventTypeDTO>> SearchTypeEvent(string stringSearch) // переделать на поиск по строке
+    private async Task<List<EventTypeDTO>?> SearchTypeEvent(string stringSearch) // переделать на поиск по строке
     {
         CurrentValue = 0;
-        var response = await mediator.Send(new GetAllTypesEventsRequest());
-        if (response.IsSuccess)
+        var typeName = stringSearch ?? "";
+        if (!string.IsNullOrEmpty(typeName))
         {
-            eventTypes = response.Types ?? new();
-            return eventTypes;
+            var response = await mediator.Send(new GetAllTypesEventsRequest());
+            if (response.IsSuccess)
+            {
+                eventTypes = response.Types ?? new();
+                return eventTypes;
+            }
+            else
+            {
+                await toastService.Error("Ошибка", response.Message ?? "Не удалось загрузить типы событий");
+            }
         }
-        else
-        {
-            await toastService.Error("Ошибка", response.Message ?? "Не удалось загрузить типы событий");
-            searchTypeEvent = "Ошибка загрузки";
-        }
+
         return new List<EventTypeDTO>(); 
     }
 

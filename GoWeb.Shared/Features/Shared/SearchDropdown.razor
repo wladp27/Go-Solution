@@ -49,12 +49,12 @@
     public EventCallback<TItem> OnSelectItem { get; set; }
     [Parameter] 
     public string? InputClassValidator { get; set; }
-    
+
     private string? searchString { get; set; }
     private bool selectedItem;
     private bool loading;
     private List<TItem> filteredItems { get; set; } =default!;
-
+    private CancellationTokenSource? _cts;
 
     private void SelectItem(TItem item)
     {
@@ -66,13 +66,24 @@
 
     private async Task Search(ChangeEventArgs args)
     {
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
 
+        try
+        {
+            await Task.Delay(300, _cts.Token);
+            filteredItems = new();
             selectedItem = false;
             searchString = args.Value?.ToString() ?? "";
             loading = true;
             var items = await SearchItems(searchString);
             loading = false;
             filteredItems = items?.Where(i => FullNameItem(i).Contains(searchString, StringComparison.OrdinalIgnoreCase)).Take(5).ToList() ?? new List<TItem>();
+        }
+        catch
+        {
+            
+        }
     }
 
 
