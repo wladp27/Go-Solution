@@ -1,11 +1,14 @@
-﻿<div class="text-center my-5 py-5">
-    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+﻿<div class="d-flex align-items-center justify-content-center w-100 h-100">
+    <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Загрузка...</span>
     </div>
-    <p class="text-muted mt-2">@Message</p>
+    @if (!string.IsNullOrEmpty(Message))
+    {
+        <span class="ms-2 text-muted">@Message</span>
+    }
 </div>
 
 @code {
     [Parameter]
-    public string Message { get; set; } = "Загрузка данных...";
+    public string Message { get; set; } = "";
 }

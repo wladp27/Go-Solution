@@ -1,5 +1,6 @@
 ﻿@using GoWeb.Shared.Model
 @using GoWeb.Shared.Models
+
 <div class="card shadow border-0 rounded-4 p-4 bg-white">
     <EditForm Model="@eventForm" OnValidSubmit="SubmitForm">
      <DataAnnotationsValidator />
@@ -19,8 +20,10 @@
         <FormSection Title="Описание события">
             <InputTextArea @bind-Value="eventForm.EventDescription" rows="6" class="form-control" id="trailDescription" />
         </FormSection>
+
         <FormSection >
             <div class="col-md-6">
+                <label class="form-label">Тип события</label>
                 <SelectTypeEvent @bind-Value="eventForm.EventTypeId"></SelectTypeEvent>
              </div>
             <div class="col-md-6">
@@ -35,6 +38,21 @@
             </div>
         </FormSection>
 
+
+
+
+        <FormSection Title="Дата и время события">
+             <div class="col-md-6">
+                <label class="form-label">Начало</label>
+                <InputDateTimeOffset @bind-Value="eventForm.StartTime" />
+             </div>
+            <div class="col-md-6">
+                <label class="form-label">Конец</label>
+                <InputDateTimeOffset @bind-Value="eventForm.EndTime" />
+            </div>
+        </FormSection>
+
+
      </EditForm>
      <FormSection>
          <div class="col-md-6">
@@ -46,8 +64,9 @@
             <InputNumber @bind-Value="eventForm.MaxParticipants" class="form-control" />
         </div>
       </FormSection>
-
-
+      <FormSection>
+        <SelectLocation @bind-Value="eventForm.LocationId"></SelectLocation>
+      </FormSection>
 
 </div>
 

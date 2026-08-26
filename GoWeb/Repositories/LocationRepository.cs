@@ -1,4 +1,8 @@
-﻿using GoWeb.Interfaces;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using GoWeb.Interfaces;
+using GoWeb.Shared.Model;
+using GoWeb.Shared.Models;
 using GoWeb.Сonstants;
 using GoWebApplication.Db.Data;
 using GoWebApplication.Db.Models;
@@ -9,15 +13,28 @@ namespace GoWeb.Repositories
     public class LocationRepository : ILocationRepository
     {
         private readonly ApplicationDbContext context;
-        public LocationRepository(ApplicationDbContext context)
+        private readonly IMapper mapper;    
+        public LocationRepository(ApplicationDbContext context, IMapper mapper)
         {
+            this.mapper = mapper;
             this.context = context;
         }
-        public async Task AddAsync(Location location)
+        public async Task<OperationResult<int>> AddAsync(Location location) 
         {
+            var exists = await ExistsAddress(location.Address, location.CityId);
+            if (exists)
+            {
+                return OperationResult<int>.Failure("Локация уже существует");
+            }
             await context.Locations.AddAsync(location);
-            await context.SaveChangesAsync();
+            var affectedRows = await context.SaveChangesAsync();
+            if (affectedRows > 0)
+            {
+                return OperationResult<int>.Success(location.Id);
+            }
+            return OperationResult<int>.Failure("Ошибка добавления локации");
         }
+
 
         public async Task DeleteAsync(Location location)
         {
@@ -53,10 +70,28 @@ namespace GoWeb.Repositories
                              .ToListAsync();
         }
 
-        public async Task<bool> ExistsAddress(string address, int cityId)
+
+        public async Task<OperationResult<List<LocationPreviewDTO>>> GetPreviewLocations(string address, int idCity)
+        {
+            if (string.IsNullOrWhiteSpace(address))
+            {
+                return OperationResult<List<LocationPreviewDTO>>.Success(new List<LocationPreviewDTO>());
+            }
+            var locations = await context.Locations.Where(l => l.Address.Contains(address) && idCity == l.CityId)
+                             .AsNoTracking()
+                             .Take(5)
+                             .ProjectTo<LocationPreviewDTO>(mapper.ConfigurationProvider)
+                             .ToListAsync();
+
+            return OperationResult<List<LocationPreviewDTO>>.Success(locations);
+        }
+
+
+        public async Task<bool> ExistsAddress(string address, int cityId) // проверку по координатам добавить
         {
             return await context.Locations.AnyAsync(l => l.Address == address && l.CityId== cityId);
         }
+
         public async Task<bool> ExistsAddress(int idLocation)
         {
             return await context.Locations.AnyAsync(l => l.Id == idLocation);

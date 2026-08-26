@@ -1,0 +1,41 @@
+﻿@typeparam TItem
+
+
+
+@if (Items != null && Items.Any())
+{
+    @foreach (var item in Items)
+    {
+        <div class="p-2 hover-item" style="cursor: pointer;" @onclick="() => HandleSelect(item)">
+            @if (ItemTemplate != null)
+            {
+                @ItemTemplate(item)
+            }
+            else
+            {
+                <span>@(item?.ToString() ?? "Что-то пошло не так ")</span>
+            }
+        </div>
+    }
+}
+else
+{
+    <div class="p-2 text-muted">Ничего не найдено</div>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public IEnumerable<TItem> Items { get; set; } = Enumerable.Empty<TItem>();
+
+    [Parameter, EditorRequired]
+    public RenderFragment<TItem> ItemTemplate { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<TItem> OnSelect { get; set; }
+
+
+    private async Task HandleSelect(TItem item)
+    {
+        await OnSelect.InvokeAsync(item);
+    }
+}

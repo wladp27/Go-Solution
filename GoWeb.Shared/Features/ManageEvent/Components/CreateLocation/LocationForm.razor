@@ -1,0 +1,100 @@
+﻿@using BootstrapBlazor.Components
+@using GoWeb.Shared.Model
+@using GoWeb.Shared.Models
+@using GoWeb.Shared.Requests
+@using GoWeb.Shared.Service
+@using MediatR
+
+@inject CityService cityService
+@inject ToastService toastService
+@inject IMediator mediator
+
+<EditForm Model="model" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="text-danger" />
+
+    <!-- Город -->
+    <div class="mb-3">
+        <label class="form-label">Город события</label>
+        <InputSelect class="form-control" @bind-Value="model.CityId">
+            <option value="">Выберите город...</option>
+            @if (cities != null)
+            {
+                @foreach (var city in cities)
+                {
+                    <option value="@city.Id">@city.NameCity</option>
+                }
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => model.CityId)" class="text-danger" />
+    </div>
+
+    <!-- Адрес -->
+    <div class="mb-3">
+        <label class="form-label">Адрес события</label>
+        <InputText class="form-control" @bind-Value="model.Address" placeholder="Введите адрес..." />
+        <ValidationMessage For="@(() => model.Address)" class="text-danger" />
+    </div>
+
+    <!-- Широта и Долгота -->
+    <div class="row mb-3">
+        <div class="col">
+            <label class="form-label">Широта</label>
+            <InputNumber class="form-control" @bind-Value="model.LocationLatitude" />
+            <ValidationMessage For="@(() => model.LocationLatitude)" class="text-danger" />
+        </div>
+        <div class="col">
+            <label class="form-label">Долгота</label>
+            <InputNumber class="form-control" @bind-Value="model.LocationLongitude" />
+            <ValidationMessage For="@(() => model.LocationLongitude)" class="text-danger" />
+        </div>
+    </div>
+
+    <!-- Описание локации -->
+    <div class="mb-3">
+        <label class="form-label">Описание локации</label>
+        <InputTextArea class="form-control" @bind-Value="model.LocationDescription" rows="3" placeholder="Дополнительная информация..." />
+        <ValidationMessage For="@(() => model.LocationDescription)" class="text-danger" />
+    </div>
+    <button type="submit" class="btn btn-primary">Создать</button>
+
+</EditForm>
+
+@code {
+    [Parameter]
+    public EventCallback<LocationCreateDTO> OnCreate{ get; set; }
+
+    private LocationCreateDTO model = new();
+    private List<CityDTO> cities = new();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await  cityService.GetCities();
+        if(result.IsSuccess)
+        {
+            cities = result.Data ?? new List<CityDTO>();
+        }
+        else
+            await toastService.Error("Ошибка","Не удалось загрузить города");
+
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        var response = await mediator.Send(new CreateLocationRequest(model));
+
+        if (response.IsSuccess && response.Data!=0)
+        {
+            await toastService.Success("Успех", "Локация успешно создана");
+            model.Id = response.Data;
+            await OnCreate.InvokeAsync(model);
+            model = new LocationCreateDTO();
+            
+        }
+        else
+        {
+            await toastService.Error("Ошибка", response.ErrorMessage);
+        }
+    }
+}

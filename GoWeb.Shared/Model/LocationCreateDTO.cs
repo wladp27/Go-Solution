@@ -1,8 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using GoWeb.Shared.Models;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Text;
 
-namespace GoWeb.Shared.Models
+namespace GoWeb.Shared.Model
 {
-    public class LocationDTO 
+    public class LocationCreateDTO
     {
         public int Id { get; set; }
 
@@ -16,7 +20,6 @@ namespace GoWeb.Shared.Models
         [Display(Name = "Город события")]
         public int? CityId { get; set; }
 
-        public List<CityDTO>? Cities { get; set; }   //удалить 
 
         [Required(ErrorMessage = "Пожалуйста, введите широту")]
         [Display(Name = "Широта")]
@@ -30,7 +33,6 @@ namespace GoWeb.Shared.Models
         public string? LocationDescription { get; set; }
 
         public List<string>? imagesPaths { get; set; }
-
 
     }
 }

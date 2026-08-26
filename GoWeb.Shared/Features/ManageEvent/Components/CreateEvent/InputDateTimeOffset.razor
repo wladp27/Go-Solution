@@ -1,0 +1,31 @@
+﻿@inherits InputBase<DateTimeOffset>
+
+<input type="datetime-local"
+       class="form-control @CssClass"
+       value="@CurrentValueAsString"
+       @onchange="OnChange" />
+
+@code {
+    protected override bool TryParseValueFromString(string value, out DateTimeOffset result, out string validationErrorMessage)
+    {
+        if (DateTime.TryParse(value, out var dateTime))
+        {
+            result = new DateTimeOffset(dateTime, TimeZoneInfo.Local.GetUtcOffset(dateTime));
+            validationErrorMessage = null!;
+            return true;
+        }
+        result = default;
+        validationErrorMessage = "Введите корректную дату и время";
+        return false;
+    }
+
+    protected override string FormatValueAsString(DateTimeOffset value)
+    {
+        return value.ToString("yyyy-MM-ddTHH:mm");
+    }
+
+    private void OnChange(ChangeEventArgs e)
+    {
+        CurrentValueAsString = e.Value?.ToString();
+    }
+}

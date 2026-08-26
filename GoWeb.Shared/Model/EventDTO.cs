@@ -20,9 +20,8 @@ namespace GoWeb.Shared.Model
         [Display(Name = "Описание события")]
         public string? EventDescription { get; set; }
 
-        public LocationDTO? Location { get; set; }
-
-        public int? LocationId { get; set; }
+        [Required(ErrorMessage = "Пожалуйста, выберите или создайте новую локацию")]
+        public int LocationId { get; set; }
 
 
         [Required(ErrorMessage = "Пожалуйста, введите рейтинг события")]
@@ -92,13 +91,6 @@ namespace GoWeb.Shared.Model
             {
                 yield return new ValidationResult("Максимальное количество участников не может быть меньше минимального."
                 , new[] { nameof(MaxParticipants) });
-            }
-
-            if (LocationId == null)
-            {
-                if (Location == null || Location.LocationLatitude == default(double) || Location.LocationLongitude == default(double)
-                    || Location.Address == null || Location.CityId == null)
-                    yield return new ValidationResult("Выберите локацию или создайте новую локацию", new[] { "Address" });
             }
         }
 

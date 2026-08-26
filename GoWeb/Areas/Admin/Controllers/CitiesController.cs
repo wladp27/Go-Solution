@@ -68,7 +68,7 @@ namespace GoWeb.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             {
-                var existingCity = await cityService.GetByIdAsync(cityView.Id.Value);
+                var existingCity = await cityService.GetByIdAsync(cityView.Id);
                 if (existingCity == null)
                 {
                     ModelState.AddModelError(string.Empty, "Город не найден для обновления. Возможно, он был удален.");

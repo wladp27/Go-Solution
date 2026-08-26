@@ -6,7 +6,7 @@ namespace GoWeb.Shared.Models
     public class CityDTO
     {
 
-        public int? Id { get; set; }
+        public int Id { get; set; }
 
         [Required(ErrorMessage = "Пожалуйста, введите название города.")]
         [StringLength(50, MinimumLength = 2, ErrorMessage = "Название должно быть от 2 до 50 символов.")]

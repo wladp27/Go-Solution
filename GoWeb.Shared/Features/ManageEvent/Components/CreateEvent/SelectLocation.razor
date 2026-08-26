@@ -1,0 +1,152 @@
+﻿@using System.Diagnostics.CodeAnalysis
+@using BootstrapBlazor.Components
+@using GoWeb.Shared.Features.Effects
+@using GoWeb.Shared.Features.ManageEvent.Components.CreateLocation
+@using GoWeb.Shared.Model
+@using GoWeb.Shared.Models
+@using GoWeb.Shared.Requests
+@using GoWeb.Shared.Service
+@using MediatR 
+
+@inherits InputBase<int>
+@inject CityService cityService
+@inject IMediator mediator
+@inject ToastService toastService
+
+@if (!isCreatingNew)
+{
+    <div class="row">
+        <div class="col-md-6">
+            <InputSelect @bind-Value="selectedIdCity" class="form-select" disabled="@disabled">
+                <option value=0>--Выбрать--</option>
+                @foreach (var city in cities ?? new())
+                {
+                    <option value="@city.Id">@city.NameCity</option>
+                }
+            </InputSelect>
+        </div>
+
+        <div class="col-md-6">
+            @if (selectedIdCity != 0)
+            {
+                <div class="input-popup-container">
+                    @if (loading)
+                    {
+                        <div class="loader-box">
+                            <Loader />
+                        </div>
+                    }
+                    else
+                    {
+                        <input class="form-control @CssClass" type="text"
+                        @oninput="SearchLocation"  value="@locationName" />
+
+                        @if (!disabled)
+                        {
+                            if (filteredLocation != null && filteredLocation.Count != 0 && !string.IsNullOrEmpty(locationName))
+                            {
+                                <WinDrrop Items="filteredLocation" OnSelect="(LocationPreviewDTO type) => SelectFilteredLocation(type)">
+                                    <ItemTemplate Context="type">
+                                        <strong>@type.</strong>
+                                    </ItemTemplate>
+                                </WinDrrop>
+                            }
+                            else if (!string.IsNullOrEmpty(locationName))
+                            {
+                                <div class="p-2 hover-item" style="cursor: pointer;"> Результатов не найдено</div>
+                            }
+                        }
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+  @if (isPopupVisible)
+{
+    <div class="custom-popup-overlay">
+        <div class="custom-popup-box">
+                <button class="btn-close" @onclick="() => { isPopupVisible = false; isCreatingNew=false; }"></button>
+            <LocationForm OnCreate="HandleLocationCreated" />
+        </div>
+    </div>
+}
+
+}
+<div class="form-check form-switch">
+    <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" @bind="isCreatingNew">
+    <label class="form-check-label" for="flexSwitchCheckDefault">Создать новую локацию</label>
+</div>
+
+
+
+
+
+@code {
+    private int selectedIdCity;
+    private int selectedIdLocation;
+    private List<CityDTO> cities = default!;
+    private bool disabled;
+    private bool loading;
+    private bool isCreatingNew = false;
+    private bool isPopupVisible;
+    private string locationName = default!;
+    private List<LocationPreviewDTO> filteredLocation = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await cityService.GetCities();
+        if(result.IsSuccess)
+        {
+            cities = result.Data?? new();
+        }
+        else
+        {
+            cities = new();
+            disabled = true;
+        }
+    }
+
+
+
+    private void SelectFilteredLocation(LocationPreviewDTO locationDTO)
+    {
+        if (locationDTO != null)
+            CurrentValue = locationDTO.Id;
+        else
+            toastService.Error("Ошибка", "Ошибка при выборе локации");
+    }
+
+
+    private async Task SearchLocation(ChangeEventArgs args) // задержку перед запросом сделать небольшую
+    {
+        loading = true;
+        if (!disabled && !string.IsNullOrEmpty(locationName) && selectedIdCity!=0)
+        {
+            locationName = args.Value?.ToString() ?? "";
+            var response = await mediator.Send(new GetFilteredLocationsRequest(locationName, selectedIdCity));
+            if(response.IsSuccess)
+            {
+                filteredLocation = response.Data ?? new();
+            }
+            else
+            {
+                await toastService.Error("Ошибка", "Непредвиденная ошибка");
+            }
+        }
+        loading = false;
+    }
+
+    protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out int result, [NotNullWhen(false)] out string validationErrorMessage)
+    {
+        throw new NotImplementedException();
+    }
+
+    private async Task HandleLocationCreated(LocationCreateDTO locationCreate)
+    {
+          CurrentValue = locationCreate.Id;
+    }
+
+}
