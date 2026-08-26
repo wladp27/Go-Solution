@@ -47,7 +47,7 @@
                             {
                                 <WinDrrop Items="filteredLocation" OnSelect="(LocationPreviewDTO type) => SelectFilteredLocation(type)">
                                     <ItemTemplate Context="type">
-                                        <strong>@type.</strong>
+                                        <strong>@type.Address</strong>
                                     </ItemTemplate>
                                 </WinDrrop>
                             }
@@ -123,9 +123,10 @@ else
     private async Task SearchLocation(ChangeEventArgs args) // задержку перед запросом сделать небольшую
     {
         loading = true;
+        locationName = args.Value?.ToString() ?? "";
         if (!disabled && !string.IsNullOrEmpty(locationName) && selectedIdCity!=0)
         {
-            locationName = args.Value?.ToString() ?? "";
+            
             var response = await mediator.Send(new GetFilteredLocationsRequest(locationName, selectedIdCity));
             if(response.IsSuccess)
             {

@@ -4,6 +4,7 @@ using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace GoWeb.Shared.Requests
 {
@@ -12,8 +13,9 @@ namespace GoWeb.Shared.Requests
         public const string RouteTemplate = "/api/location/{idCity}/{address}";
         public class Response : OperationResult<List<LocationPreviewDTO>>
         {
-            protected Response(bool isSuccess, List<LocationPreviewDTO> value, string errorMessage)
-                : base(isSuccess, value, errorMessage) { }
+            [JsonConstructor]
+            public Response(bool isSuccess, List<LocationPreviewDTO> data, string errorMessage)
+                : base(isSuccess, data, errorMessage) { }
 
             public new static Response Success(List<LocationPreviewDTO> value) =>
                 new(true, value, string.Empty);
