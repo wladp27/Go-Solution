@@ -1,0 +1,82 @@
+﻿
+@using GoWeb.Shared.Features.Effects
+
+
+@typeparam TItem
+
+
+
+
+<div class="input-popup-container">
+    @if (loading)
+    {
+        <div class="loader-box">
+            <Loader />
+        </div>
+    }
+    else
+    {
+        <input class="form-control @InputClassValidator" type="text"
+        @oninput="Search" @attributes="AdditionalAttributes" value="@searchString" />
+
+
+        @if (filteredItems != null && filteredItems.Count != 0 && !string.IsNullOrEmpty(searchString) && !selectedItem)
+        {
+            <WinDrrop Items="filteredItems" OnSelect="(TItem item) => SelectItem(item)">
+                <ItemTemplate Context="item">
+                    <strong>@FullNameItem(item)</strong>
+                </ItemTemplate>
+            </WinDrrop>
+        }
+        else if (!string.IsNullOrEmpty(searchString) && !selectedItem)
+        {
+            <div class="p-2 hover-item" style="cursor: pointer;"> Результатов не найдено</div>
+        }
+
+    }
+</div>
+@code 
+{
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+
+    [Parameter,EditorRequired]
+    public Func<TItem, string> FullNameItem { get; set; }
+    [Parameter, EditorRequired]
+    public Func<string,Task<List<TItem>>> SearchItems { get; set; }
+    [Parameter, EditorRequired]
+    public EventCallback<TItem> OnSelectItem { get; set; }
+    [Parameter] 
+    public string? InputClassValidator { get; set; }
+    
+    private string? searchString { get; set; }
+    private bool selectedItem;
+    private bool loading;
+    private List<TItem> filteredItems { get; set; } =default!;
+
+
+    private void SelectItem(TItem item)
+    {
+
+        searchString = FullNameItem(item);
+        selectedItem = true;
+        OnSelectItem.InvokeAsync(item);
+    }
+
+    private async Task Search(ChangeEventArgs args)
+    {
+
+            selectedItem = false;
+            searchString = args.Value?.ToString() ?? "";
+            loading = true;
+            var items = await SearchItems(searchString);
+            loading = false;
+            filteredItems = items?.Where(i => FullNameItem(i).Contains(searchString, StringComparison.OrdinalIgnoreCase)).Take(5).ToList() ?? new List<TItem>();
+    }
+
+
+
+
+
+}

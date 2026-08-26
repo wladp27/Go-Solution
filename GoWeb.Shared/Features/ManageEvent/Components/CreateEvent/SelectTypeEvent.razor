@@ -1,6 +1,6 @@
 ﻿@using System.Diagnostics.CodeAnalysis
 @using BootstrapBlazor.Components
-@using GoWeb.Shared.Features.Effects
+@using GoWeb.Shared.Features.Shared
 @using GoWeb.Shared.Models
 @using GoWeb.Shared.Requests
 @using MediatR
@@ -9,37 +9,12 @@
 @inject ToastService toastService
 @inherits InputBase<int>
 
-     
-<div class="input-popup-container">
-    @if (loading)
-    {
-        <div class="loader-box">
-            <Loader />
-        </div>
-    }
-    else
-    {
-        <input class="form-control @CssClass" type="text" 
-        @oninput="SearchType" disabled="@disabled" value="@searchTypeEvent" />
-
-        @if (!disabled)
-        {
-            if (filteredTypes != null && filteredTypes.Count != 0 && !string.IsNullOrEmpty(searchTypeEvent))
-            {
-                <WinDrrop Items="filteredTypes" OnSelect="(EventTypeDTO type) => SelectType(type)">
-                   <ItemTemplate Context="type">
-                        <strong>@type.Name</strong>
-                    </ItemTemplate>
-               </WinDrrop>
-            }
-            else if (!string.IsNullOrEmpty(searchTypeEvent))
-            {
-                <div class="p-2 hover-item" style="cursor: pointer;"> Результатов не найдено</div>
-            }
-        }
-
-    }
-</div>
+<SearchDropdown 
+     SearchItems="SearchTypeEvent" 
+     OnSelectItem="(EventTypeDTO type) => SelectType(type)" 
+     FullNameItem="(EventTypeDTO type) => type.Name" 
+     InputClassValidator="@CssClass">
+ </SearchDropdown>    
 
 
 
@@ -47,48 +22,43 @@
 
     private string? searchTypeEvent;
     private List<EventTypeDTO> eventTypes { get; set; } = default!;
-    private bool disabled;
-    private bool loading;
     private List<EventTypeDTO> filteredTypes = default!;
+
+    // private bool IsFieldInvalid =>EditContext != null && EditContext.GetValidationMessages(FieldIdentifier).Any();
+
 
     protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out int result, [NotNullWhen(false)] out string validationErrorMessage)
     {
         throw new NotImplementedException();
     }
 
-    protected override async Task OnInitializedAsync()
+
+    private async Task<List<EventTypeDTO>> SearchTypeEvent(string stringSearch) // переделать на поиск по строке
     {
-        loading = true;
-        disabled = true;
+        CurrentValue = 0;
         var response = await mediator.Send(new GetAllTypesEventsRequest());
-        if(response.IsSuccess)
+        if (response.IsSuccess)
         {
-            eventTypes = response.Types?? new();
-            disabled = false;
+            eventTypes = response.Types ?? new();
+            return eventTypes;
         }
         else
         {
             await toastService.Error("Ошибка", response.Message ?? "Не удалось загрузить типы событий");
-            disabled = true;
             searchTypeEvent = "Ошибка загрузки";
         }
-        loading = false;
+        return new List<EventTypeDTO>(); 
     }
-    private void SearchType(ChangeEventArgs args)
-    {   
-        if (!disabled)
-        {
-            searchTypeEvent = args.Value?.ToString() ?? "";
-            filteredTypes = eventTypes.Where(t => t.Name.Contains(searchTypeEvent, StringComparison.OrdinalIgnoreCase)).Take(5).ToList();
 
+    private async Task SelectType(EventTypeDTO typeEvent)
+    {
+        if (typeEvent != null)
+        {
+            CurrentValue = typeEvent.Id;
+        }
+        else
+        {
+            CurrentValue = 0;
         }
     }
-
-    private void SelectType(EventTypeDTO eventTypeDTO)
-    {
-        CurrentValue = eventTypeDTO.Id;
-        searchTypeEvent = eventTypeDTO.Name;
-    }
-   
-
 }

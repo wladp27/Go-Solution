@@ -20,7 +20,7 @@ namespace GoWeb.Shared.Model
         [Display(Name = "Описание события")]
         public string? EventDescription { get; set; }
 
-        [Required(ErrorMessage = "Пожалуйста, выберите или создайте новую локацию")]
+        [Range(1, int.MaxValue, ErrorMessage = "Пожалуйста, выберите или создайте новую локацию")]
         public int LocationId { get; set; }
 
 
@@ -56,6 +56,7 @@ namespace GoWeb.Shared.Model
         [Display(Name = "Организатор события")]
         public string? OrganizerId { get; set; } = string.Empty;
 
+        [Range(1, int.MaxValue, ErrorMessage = "Пожалуйста, выберите тип события")]
         [Display(Name = "Тип события")]
         public int EventTypeId { get; set; }
 

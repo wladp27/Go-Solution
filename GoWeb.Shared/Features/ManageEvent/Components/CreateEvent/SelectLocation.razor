@@ -2,6 +2,7 @@
 @using BootstrapBlazor.Components
 @using GoWeb.Shared.Features.Effects
 @using GoWeb.Shared.Features.ManageEvent.Components.CreateLocation
+@using GoWeb.Shared.Features.Shared
 @using GoWeb.Shared.Model
 @using GoWeb.Shared.Models
 @using GoWeb.Shared.Requests
@@ -38,12 +39,11 @@
                     }
                     else
                     {
-                        <input class="form-control @CssClass" type="text"
-                        @oninput="SearchLocation"  value="@locationName" />
+                        <input class="form-control @CssClass" type="text" @oninput="SearchLocation"  value="@locationName" />
 
                         @if (!disabled)
                         {
-                            if (filteredLocation != null && filteredLocation.Count != 0 && !string.IsNullOrEmpty(locationName))
+                            if (filteredLocation != null && filteredLocation.Count != 0 && !string.IsNullOrEmpty(locationName) && !selectedLocation)
                             {
                                 <WinDrrop Items="filteredLocation" OnSelect="(LocationPreviewDTO type) => SelectFilteredLocation(type)">
                                     <ItemTemplate Context="type">
@@ -89,6 +89,7 @@ else
     private int selectedIdLocation;
     private List<CityDTO> cities = default!;
     private bool disabled;
+    private bool selectedLocation;
     private bool loading;
     private bool isCreatingNew = false;
     private bool isPopupVisible;
@@ -114,9 +115,17 @@ else
     private void SelectFilteredLocation(LocationPreviewDTO locationDTO)
     {
         if (locationDTO != null)
+        {
             CurrentValue = locationDTO.Id;
+            selectedLocation = true;
+        }
+
         else
+        {
             toastService.Error("Ошибка", "Ошибка при выборе локации");
+            selectedLocation = false;
+        }
+        
     }
 
 
