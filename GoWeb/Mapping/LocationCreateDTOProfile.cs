@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using GoWeb.Shared.Model;
 using GoWeb.Shared.Models;
 using GoWebApplication.Db.Models;
 
@@ -8,7 +9,7 @@ namespace GoWeb.Mapping
     {
         public LocationCreateDTOProfile()
         {
-            CreateMap<LocationCreateDTOProfile, Location>();
+            CreateMap<LocationCreateDTO, Location>();
         }
         
     }
