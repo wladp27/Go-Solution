@@ -11,7 +11,7 @@ namespace GoWeb.Shared.Model
         public int Id { get; set; }
 
         [Display(Name = "Адресс события")]
-        public string? Address { get; set; }
+        public string Address { get; set; }
 
 
         [Display(Name = "Город события")]

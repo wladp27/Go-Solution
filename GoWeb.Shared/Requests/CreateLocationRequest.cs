@@ -4,16 +4,19 @@ using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace GoWeb.Shared.Requests
 {
-    public record CreateLocationRequest(LocationCreateDTO Location): IRequest<CreateLocationRequest.Response>
+    public record CreateLocationRequest(LocationCreateDTO Location) : IRequest<CreateLocationRequest.Response>
     {
         public const string RouteTemplate = "/api/location/create";
+
         public class Response : OperationResult<int>
         {
-            protected Response(bool isSuccess, int value, string errorMessage)
-                : base(isSuccess, value, errorMessage) { }
+            
+            public Response(bool isSuccess, int data, string errorMessage)
+                : base(isSuccess, data, errorMessage) { }
 
             public new static Response Success(int value) =>
                 new(true, value, string.Empty);

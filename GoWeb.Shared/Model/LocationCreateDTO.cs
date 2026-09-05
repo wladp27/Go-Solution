@@ -13,12 +13,12 @@ namespace GoWeb.Shared.Model
         [Required(ErrorMessage = "Пожалуйста, введите адресс события")]
         [StringLength(500, MinimumLength = 2, ErrorMessage = "Адресс должен быть от 2 до 500 символов.")]
         [Display(Name = "Адресс события")]
-        public string? Address { get; set; }
+        public string Address { get; set; } = default!;
 
         [Required(ErrorMessage = "Пожалуйста,выберите город события")]
 
         [Display(Name = "Город события")]
-        public int? CityId { get; set; }
+        public int CityId { get; set; }
 
 
         [Required(ErrorMessage = "Пожалуйста, введите широту")]
