@@ -50,6 +50,7 @@ namespace GoWeb.Shared.Model
         public int MaxParticipants { get; set; }
 
         [Required(ErrorMessage = "Пожалуйста,введите стоимость участия в событии")]
+        [Range(1, int.MaxValue, ErrorMessage = "Стоимость участия в событии должна быть положительной")]
         [Display(Name = " Стоимость участия в событии")]
         public decimal Price { get; set; }
 
