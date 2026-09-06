@@ -1,11 +1,19 @@
 ﻿@page "/create-event"
+@using BootstrapBlazor.Components
+@using GoWeb.Shared.Features.ManageEvent.Components.EventForm
+@using GoWeb.Shared.Model
+@using GoWeb.Shared.Requests
+@using MediatR
+@using static GoWeb.Shared.Model.EventDTO
 
-@using GoWeb.Shared.Features.ManageEvent.Components.CreateEvent
+@inject IMediator mediator
+@inject ToastService toastService
+
 <div class="container my-5">
     <div class="row justify-content-center">
         <div class="col-12 col-sm-8 col-md-6 col-lg-8">
             <h2 class="h3 fw-bold text-dark mb-2 text-center">Создать событие</h2>
-                    <EventForm>
+            <EventForm OnSubmit="CreateEvent">
 
                     </EventForm>
         </div>
@@ -15,5 +23,26 @@
 
 
 @code {
+
+    private async Task CreateEvent(EventDTO eventCreate, IBrowserFile browserFile)
+    {
+        if(eventCreate!=null)
+        {
+            if (eventCreate.imageAction == ImageAction.Add && browserFile != null)  
+            {
+                var result = await mediator.Send(new AddImageEventRequest(browserFile));
+                if (result.IsSuccess)
+                {
+                    eventCreate.ImagePath = result.Data;
+
+                }
+                else
+                {
+                    await toastService.Error("Ошибка", $"{result.ErrorMessage}");
+                    return;
+                }
+            }
+        }
+    }
 
 }
