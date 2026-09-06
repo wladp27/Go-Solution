@@ -1,5 +1,6 @@
 ﻿@using GoWeb.Shared.Model
 @using GoWeb.Shared.Models
+@inject HttpClient httpClient
 
 <div class="card shadow border-0 rounded-4 p-4 bg-white">
     <EditForm Model="@eventForm" OnValidSubmit="SubmitForm">
@@ -36,10 +37,7 @@
                     }
                 </InputSelect>
             </div>
-        </FormSection>
-
-
-
+        </FormSection> 
 
         <FormSection Title="Дата и время события">
              <div class="col-md-6">
@@ -51,6 +49,7 @@
                 <InputDateTimeOffset @bind-Value="eventForm.EndTime" />
             </div>
         </FormSection>
+
      <FormSection>
          <div class="col-md-6">
             <label class="form-label">Мин. участников</label>
@@ -64,6 +63,22 @@
       <FormSection>
         <SelectLocation @bind-Value="eventForm.LocationId"></SelectLocation>
       </FormSection>
+      <FormSection Title="Загрузка изображения">
+            @if (!string.IsNullOrEmpty(eventForm.ImagePath))
+            {
+              <div class="col-md-6">
+                    <div class="image-preview-container">
+                        <img src="@(httpClient.BaseAddress + eventForm.ImagePath)" alt="Preview" class="preview-img" />
+                        <button type="button" class="remove-btn" @onclick="RemoveEventImage" title="Удалить картинку">
+                            &times;
+                        </button>
+                    </div>
+              </div>
+            }
+            <div class="col-md-6">
+                <InputFile OnChange="LoadEventImage" class="form-control-file" id="eventImage" accept=".png,.jpg,.jpeg" />
+            </div>
+       </FormSection>
     </EditForm>
 </div>
 
@@ -79,5 +94,51 @@
     private List<CityDTO> cities { get; set; } = new List<CityDTO>();
     private EventDTO eventForm { get; set; } = new EventDTO();
     private IBrowserFile? eventImage { get; set; }
+
     private async Task SubmitForm() => await OnSubmit(eventForm, eventImage);
+
+
+    protected override void OnInitialized()
+    {
+        if (Event != null)
+        {
+            eventForm = new EventDTO
+            {
+                Id = Event.Id,
+                EventName = Event.EventName,
+                EventDescription = Event.EventDescription,
+                LocationId = Event.LocationId,
+                RequiredRating = Event.RequiredRating,
+                StartTime = Event.StartTime,
+                EndTime = Event.EndTime,
+                MinParticipants = Event.MinParticipants,
+                MaxParticipants = Event.MaxParticipants,
+                Price = Event.Price,
+                OrganizerId = Event.OrganizerId,
+                EventTypeId = Event.EventTypeId,
+                ImagePath = Event.ImagePath,
+                StatusEventId = Event.StatusEventId,
+                CountDaysRecreate = Event.CountDaysRecreate,
+                imageAction = Event.imageAction,
+                Address = Event.Address,
+            }; 
+        }
+        else
+        {
+            eventForm = new EventDTO();
+        }
+    }
+
+    private void LoadEventImage(InputFileChangeEventArgs e)
+    {
+        eventImage = e.File;
+        eventForm.imageAction = EventDTO.ImageAction.Add;
+    }
+
+    private void RemoveEventImage()
+    {
+        eventForm.ImagePath = null;
+        eventForm.imageAction = EventDTO.ImageAction.Remove;
+    }
+
 }

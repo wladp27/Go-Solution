@@ -1,0 +1,40 @@
+
+.image-preview-container {
+    position: relative;
+    display: inline-block; 
+    margin-top: 10px;
+}
+
+
+.preview-img {
+    max-width: 200px;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+}
+
+
+.remove-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(0, 0, 0, 0.6); 
+    color: white;
+    border: none;
+    border-radius: 50%; 
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+
+    .remove-btn:hover {
+        background: rgba(220, 53, 69, 0.9); 
+    }
