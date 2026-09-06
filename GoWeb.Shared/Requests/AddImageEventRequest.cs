@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 
 namespace GoWeb.Shared.Requests
 {
-    public record AddImageEventRequest(IBrowserFile EventImage) : IRequest<AddImageEventRequest.Response>
+    public record AddImageEventRequest(IBrowserFile Image) : IRequest<AddImageEventRequest.Response>
     {
         public const string RouteTemplate = "/api/images/add";
         public class Response : OperationResult<string>
