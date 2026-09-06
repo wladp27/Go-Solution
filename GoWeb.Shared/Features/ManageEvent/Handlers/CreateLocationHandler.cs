@@ -25,7 +25,6 @@ namespace GoWeb.Shared.Features.ManageEvent.Handlers
                     var errorContent = await httpResponse.Content.ReadFromJsonAsync<CreateLocationRequest.Response>(cancellationToken);
                     return errorContent ??  CreateLocationRequest.Response.Failure("Произошла непредвиденная ошибка");
                 }
-                string jsonString = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
                 var content = await httpResponse.Content.ReadFromJsonAsync<CreateLocationRequest.Response>(cancellationToken);
                 return content ?? CreateLocationRequest.Response.Failure("Получен пустой ответ от сервера");
             }
