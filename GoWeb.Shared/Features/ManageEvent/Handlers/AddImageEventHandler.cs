@@ -22,8 +22,8 @@ namespace GoWeb.Shared.Features.ManageEvent.Handlers
             try
             {
                 using var contentImage = new MultipartFormDataContent();
-                using var fileStream = request.EventImage.OpenReadStream(maxAllowedSize: 1024 * 1024 * 10);
-                contentImage.Add(new StreamContent(fileStream), "file", request.EventImage.Name);
+                using var fileStream = request.Image.OpenReadStream(maxAllowedSize: 1024 * 1024 * 10);
+                contentImage.Add(new StreamContent(fileStream), "image", request.Image.Name);
                 var httpResponse = await client.PostAsync(AddImageEventRequest.RouteTemplate, contentImage, cancellationToken);
 
                 if (!httpResponse.IsSuccessStatusCode)
