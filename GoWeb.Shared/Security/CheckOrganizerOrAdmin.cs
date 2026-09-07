@@ -1,9 +1,8 @@
-﻿using GoWeb.Models;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using GoWeb.Shared.Models;
 
-namespace GoWeb.Filters.Authorization
+namespace GoWeb.Shared.Security
 {
     public class OrginizerOrAdminRequirement : IAuthorizationRequirement
     {

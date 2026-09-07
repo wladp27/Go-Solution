@@ -2,7 +2,6 @@
 
 using GoWeb.Commands.Event;
 using GoWeb.Filters;
-using GoWeb.Filters.Authorization;
 using GoWeb.Interfaces;
 using GoWeb.Models;
 using GoWeb.Repositories;
@@ -16,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Linq;
 using System.Security.Claims;
 using GoWeb.Shared.Models;
+using GoWeb.Shared.Security;
 
 namespace GoWeb.Areas.Manage.Controllers
 {
