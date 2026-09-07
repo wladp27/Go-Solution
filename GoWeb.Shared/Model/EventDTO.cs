@@ -43,11 +43,13 @@ namespace GoWeb.Shared.Model
         public DateTimeOffset EndTime { get; set; } = DateTimeOffset.Now.AddMinutes(4);
 
         [Required(ErrorMessage = "Пожалуйста, введите минимальное количество участников")]
+        [Range(1, int.MaxValue, ErrorMessage = "Число должно быть положительным")]
         [Display(Name = "Минимальное количество участников")]
         public int MinParticipants { get; set; }
 
         [Required(ErrorMessage = "Пожалуйста, введите максимальное количество участников")]
         [Display(Name = "Максимальное количество участников")]
+        [Range(1, int.MaxValue, ErrorMessage = "Число должно быть положительным")]
         public int MaxParticipants { get; set; }
 
         [Required(ErrorMessage = "Пожалуйста,введите стоимость участия в событии")]
