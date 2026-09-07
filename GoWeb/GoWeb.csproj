@@ -15,10 +15,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="..\GoWebBlazor\Features\Event\Components\Component.razor" Link="Component.razor" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
 		<PackageReference Include="MediatR" Version="14.0.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />

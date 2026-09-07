@@ -57,7 +57,8 @@ namespace GoWeb.Shared.Model
         [Display(Name = "Организатор события")]
         public string? OrganizerId { get; set; } = string.Empty;
 
-        [Range(1, int.MaxValue, ErrorMessage = "Пожалуйста, выберите тип события")]
+        [Required(ErrorMessage = "Пожалуйста, выберите тип события")]
+        [Range(1, int.MaxValue, ErrorMessage = "Пожалуйста, выберите существующий тип события")]
         [Display(Name = "Тип события")]
         public int EventTypeId { get; set; }
 
@@ -76,11 +77,6 @@ namespace GoWeb.Shared.Model
         public int? CountDaysRecreate { get; set; }
 
         public ImageAction imageAction { get; set; }
-
-        public string? Address { get; set; }
-
-        public List<EventTypeDTO>? EventTypes { get; set; }
-        public List<StatusEventsDTO>? StatusEvents { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

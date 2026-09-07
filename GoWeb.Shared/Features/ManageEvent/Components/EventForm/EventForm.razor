@@ -1,19 +1,22 @@
 ﻿@using GoWeb.Shared.Model
 @using GoWeb.Shared.Models
+@using GoWeb.Shared.Requests
+@using MediatR 
 @inject HttpClient httpClient
+@inject IMediator mediator
 
 <div class="card shadow border-0 rounded-4 p-4 bg-white">
     <EditForm Model="@eventForm" OnValidSubmit="SubmitForm">
-     <DataAnnotationsValidator />
-         <FormSection>
-                <div class="col-md-6">
-                    <label class="form-label">Название события</label>
-                    <InputText @bind-Value="eventForm.EventName" class="form-control" />
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Стоимость участия</label>
-                    <InputNumber @bind-Value="eventForm.Price" class="form-control" />
-                </div>
+        <DataAnnotationsValidator />
+        <FormSection>
+            <div class="col-md-6">
+                <label class="form-label">Название события</label>
+                <InputText @bind-Value="eventForm.EventName" class="form-control" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Стоимость участия</label>
+                <InputNumber @bind-Value="eventForm.Price" class="form-control" />
+            </div>
         </FormSection>
         <FormSection Title="Требуемый рейтинг">
             <InputNumber @bind-Value="eventForm.RequiredRating" class="form-control" />
@@ -26,7 +29,7 @@
             <div class="col-md-6">
                 <label class="form-label">Тип события</label>
                 <SelectTypeEvent @bind-Value="eventForm.EventTypeId"></SelectTypeEvent>
-             </div>
+            </div>
             <div class="col-md-6">
                 <label class="form-label">Статус события</label>
                 <InputSelect @bind-Value="eventForm.StatusEventId" class="form-select">
@@ -40,46 +43,47 @@
         </FormSection> 
 
         <FormSection Title="Дата и время события">
-             <div class="col-md-6">
+            <div class="col-md-6">
                 <label class="form-label">Начало</label>
                 <InputDateTimeOffset @bind-Value="eventForm.StartTime" />
-             </div>
+            </div>
             <div class="col-md-6">
                 <label class="form-label">Конец</label>
                 <InputDateTimeOffset @bind-Value="eventForm.EndTime" />
             </div>
         </FormSection>
 
-     <FormSection>
-         <div class="col-md-6">
-            <label class="form-label">Мин. участников</label>
-            <InputNumber @bind-Value="eventForm.MinParticipants" class="form-control" />
-         </div>
-        <div class="col-md-6">
-            <label class="form-label">Макс. участников</label>
-            <InputNumber @bind-Value="eventForm.MaxParticipants" class="form-control" />
-        </div>
-      </FormSection>
-      <FormSection>
-        <SelectLocation @bind-Value="eventForm.LocationId"></SelectLocation>
-      </FormSection>
-      <FormSection Title="Загрузка изображения">
+        <FormSection>
+            <div class="col-md-6">
+                <label class="form-label">Мин. участников</label>
+                <InputNumber @bind-Value="eventForm.MinParticipants" class="form-control" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Макс. участников</label>
+                <InputNumber @bind-Value="eventForm.MaxParticipants" class="form-control" />
+            </div>
+        </FormSection>
+        <FormSection>
+            <SelectLocation @bind-Value="eventForm.LocationId"></SelectLocation>
+        </FormSection>
+        <FormSection Title="Загрузка изображения">
             @if (!string.IsNullOrEmpty(eventForm.ImagePath))
             {
-              <div class="col-md-6">
+                <div class="col-md-6">
                     <div class="image-preview-container">
                         <img src="@(httpClient.BaseAddress + eventForm.ImagePath)" alt="Preview" class="preview-img" />
                         <button type="button" class="remove-btn" @onclick="RemoveEventImage" title="Удалить картинку">
                             &times;
                         </button>
                     </div>
-              </div>
+                </div>
             }
             <div class="col-md-6">
                 <InputFile OnChange="LoadEventImage" class="form-control-file" id="eventImage" accept=".png,.jpg,.jpeg" />
             </div>
-       </FormSection>
+        </FormSection>
     </EditForm>
+    <button type="submit" class="btn btn-primary"> <span>Создать событие</span> </button>
 </div>
 
 
@@ -120,7 +124,7 @@
                 StatusEventId = Event.StatusEventId,
                 CountDaysRecreate = Event.CountDaysRecreate,
                 imageAction = Event.imageAction,
-                Address = Event.Address,
+
             }; 
         }
         else
@@ -140,5 +144,6 @@
         eventForm.ImagePath = null;
         eventForm.imageAction = EventDTO.ImageAction.Remove;
     }
+
 
 }
