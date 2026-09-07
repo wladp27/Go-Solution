@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Net.Http.Json;
 using System.Text;
 
-namespace GoWeb.Shared.Features.ManageEvent.Handlers
+namespace GoWeb.Shared.Features.Manage.Handlers
 {
     public class CreateLocationHandler : IRequestHandler<CreateLocationRequest, CreateLocationRequest.Response>
     {

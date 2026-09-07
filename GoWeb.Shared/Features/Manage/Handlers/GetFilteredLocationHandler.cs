@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Net.Http.Json;
 using System.Text;
 
-namespace GoWeb.Shared.Features.ManageEvent.Handlers
+namespace GoWeb.Shared.Features.Manage.Handlers
 {
     public class GetFilteredLocationHandler : IRequestHandler<GetFilteredLocationsRequest, GetFilteredLocationsRequest.Response>
     {
