@@ -30,7 +30,7 @@ namespace GoWeb.Shared.Model
         [Range(0, 100, ErrorMessage = "Рейтинг события в пределах от 0 до 100")]
         public int RequiredRating { get; set; }
 
-        [Required(ErrorMessage = "Пожалуйста, дату и время начала события")]
+        [Required(ErrorMessage = "Пожалуйста,введите дату и время начала события")]
         [Display(Name = "Дата и время начала события")]
         [DataType(DataType.DateTime)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
@@ -68,7 +68,7 @@ namespace GoWeb.Shared.Model
         [Display(Name = "Изображение превью события")]
         public string? ImagePath { get; set; }
 
-        [AllowedValues((int)StatusEventConts.Published, (int)StatusEventConts.Draft, ErrorMessage = "Выбран недопустимый ID уровня доступа.")]
+        [AllowedValues((int)StatusEventConts.Published, (int)StatusEventConts.Draft, ErrorMessage = "Выберерите статус события.")]
         [Required(ErrorMessage = "Пожалуйста,выберите статус события")]
         [Display(Name = "Статус события")]
         public int StatusEventId { get; set; }
