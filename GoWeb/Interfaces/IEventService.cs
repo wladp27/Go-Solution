@@ -1,8 +1,9 @@
 ﻿using GoWeb.Models;
+using GoWeb.Shared.Model;
+using GoWeb.Shared.Models;
 using GoWeb.Сonstants;
 using GoWebApplication.Db.Models;
 using System.Security.Claims;
-using GoWeb.Shared.Models;
 namespace GoWeb.Interfaces
 {
     public interface IEventService
@@ -11,6 +12,7 @@ namespace GoWeb.Interfaces
         public Task<List<CommandViewModel>> GetCommandChekingCanckeledEventAsync();
         public Task<List<CommandViewModel>> GetCommandRecreateEventAsync();
         public Task<int> AddAsync(Event ev);
+        public Task<int> AddAsync(EventDTO ev);
         public Task<EventFilterDTO> GetDataForFilter();
         public Task<List<EventTypeDTO>> GetTypesEventsForCity(int idCity);
         public Task<EventSummaryDTO?> GetPublichEventByIdAsync(int id);

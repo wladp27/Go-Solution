@@ -1,44 +1,53 @@
 ﻿@using GoWeb.Shared.Model
 @using GoWeb.Shared.Models
 @using GoWeb.Shared.Requests
-@using MediatR 
+@using GoWeb.Shared.Сonstants
+@using MediatR
+
 @inject HttpClient httpClient
 @inject IMediator mediator
 
 <div class="card shadow border-0 rounded-4 p-4 bg-white">
     <EditForm Model="@eventForm" OnValidSubmit="SubmitForm">
         <DataAnnotationsValidator />
+        <ValidationSummary class="text-danger mb-3" />
         <FormSection>
             <div class="col-md-6">
                 <label class="form-label">Название события</label>
                 <InputText @bind-Value="eventForm.EventName" class="form-control" />
+                <ValidationMessage For="@(() => eventForm.EventName)" class="text-danger" />
             </div>
             <div class="col-md-6">
                 <label class="form-label">Стоимость участия</label>
                 <InputNumber @bind-Value="eventForm.Price" class="form-control" />
+                <ValidationMessage For="@(() => eventForm.Price)" class="text-danger" />
             </div>
         </FormSection>
         <FormSection Title="Требуемый рейтинг">
             <InputNumber @bind-Value="eventForm.RequiredRating" class="form-control" />
+            <ValidationMessage For="@(() => eventForm.RequiredRating)" class="text-danger" />
         </FormSection>
         <FormSection Title="Описание события">
             <InputTextArea @bind-Value="eventForm.EventDescription" rows="6" class="form-control" id="trailDescription" />
+            <ValidationMessage For="@(() => eventForm.EventDescription)" class="text-danger" />
         </FormSection>
 
         <FormSection >
             <div class="col-md-6">
                 <label class="form-label">Тип события</label>
                 <SelectTypeEvent @bind-Value="eventForm.EventTypeId"></SelectTypeEvent>
+                <ValidationMessage For="@(() => eventForm.EventTypeId)" class="text-danger" />
             </div>
             <div class="col-md-6">
                 <label class="form-label">Статус события</label>
                 <InputSelect @bind-Value="eventForm.StatusEventId" class="form-select">
                     <option value=0>--Выбрать--</option>
-                    @foreach (var status in statusEventsDTO ?? new())
+                    @foreach (var status in statusEvent ?? new())
                     {
                         <option value="@status.Id">@status.Status</option>
                     }
                 </InputSelect>
+                <ValidationMessage For="@(() => eventForm.StatusEventId)" class="text-danger" />
             </div>
         </FormSection> 
 
@@ -46,10 +55,12 @@
             <div class="col-md-6">
                 <label class="form-label">Начало</label>
                 <InputDateTimeOffset @bind-Value="eventForm.StartTime" />
+                <ValidationMessage For="@(() => eventForm.StartTime)" class="text-danger" />
             </div>
             <div class="col-md-6">
                 <label class="form-label">Конец</label>
                 <InputDateTimeOffset @bind-Value="eventForm.EndTime" />
+                <ValidationMessage For="@(() => eventForm.EndTime)" class="text-danger" />
             </div>
         </FormSection>
 
@@ -57,14 +68,17 @@
             <div class="col-md-6">
                 <label class="form-label">Мин. участников</label>
                 <InputNumber @bind-Value="eventForm.MinParticipants" class="form-control" />
+                <ValidationMessage For="@(() => eventForm.MinParticipants)" class="text-danger" />
             </div>
             <div class="col-md-6">
                 <label class="form-label">Макс. участников</label>
                 <InputNumber @bind-Value="eventForm.MaxParticipants" class="form-control" />
+                <ValidationMessage For="@(() => eventForm.MaxParticipants)" class="text-danger" />
             </div>
         </FormSection>
         <FormSection>
             <SelectLocation @bind-Value="eventForm.LocationId"></SelectLocation>
+            <ValidationMessage For="@(() => eventForm.LocationId)" class="text-danger" />
         </FormSection>
         <FormSection Title="Загрузка изображения">
             @if (!string.IsNullOrEmpty(eventForm.ImagePath))
@@ -80,10 +94,12 @@
             }
             <div class="col-md-6">
                 <InputFile OnChange="LoadEventImage" class="form-control-file" id="eventImage" accept=".png,.jpg,.jpeg" />
+                <ValidationMessage For="@(() => eventImage)" class="text-danger" />
             </div>
         </FormSection>
-    </EditForm>
     <button type="submit" class="btn btn-primary"> <span>Создать событие</span> </button>
+    </EditForm>
+    
 </div>
 
 
@@ -91,11 +107,16 @@
 @code {
     [Parameter]
     public EventDTO? Event { get; set; }
-    [Parameter]
+    [Parameter,EditorRequired]
     public Func<EventDTO, IBrowserFile?, Task> OnSubmit { get; set; }
 
-    private List<StatusEventsDTO> statusEventsDTO { get; set; } = new List<StatusEventsDTO>();
-    private List<CityDTO> cities { get; set; } = new List<CityDTO>();
+    private List<StatusEventsDTO> statusEvent { get; set; } = 
+                                        new List<StatusEventsDTO>() 
+                                        {
+                                            new StatusEventsDTO { Id = (int)StatusEventConts.Published, Status = "Опубликовано" }, 
+                                            new StatusEventsDTO { Id = (int)StatusEventConts.Draft, Status = "Черновик" } 
+                                        };
+
     private EventDTO eventForm { get; set; } = new EventDTO();
     private IBrowserFile? eventImage { get; set; }
 

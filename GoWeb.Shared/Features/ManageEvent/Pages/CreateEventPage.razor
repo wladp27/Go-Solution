@@ -3,9 +3,11 @@
 @using GoWeb.Shared.Features.ManageEvent.Components.EventForm
 @using GoWeb.Shared.Model
 @using GoWeb.Shared.Requests
+@using GoWeb.Shared.Сonstants
 @using MediatR
 @using static GoWeb.Shared.Model.EventDTO
 
+@inject NavigationManager NavigationManager
 @inject IMediator mediator
 @inject ToastService toastService
 
@@ -32,7 +34,17 @@
                 if (result.IsSuccess)
                 {
                     eventCreate.ImagePath = result.Data;
-
+                    var response = await mediator.Send(new CreateEventRequest(eventCreate));
+                    if (response.IsSuccess)
+                    {
+                        await toastService.Success("Успешно", "Событие успешно создано.");
+                        NavigationManager.NavigateTo(Routes.EventDetails.Replace("{IdEvent}", response.EventId.ToString()));
+                    }
+                    else
+                    {
+                        await toastService.Error("Ошибка", $"{response.ErrorMessage}");
+                        return;
+                    }
                 }
                 else
                 {
@@ -40,6 +52,11 @@
                     return;
                 }
             }
+        }
+        else
+        {
+            await toastService.Error("Ошибка", "Данные события не могут быть пустыми.");
+            return;
         }
     }
 

@@ -20,6 +20,7 @@ namespace GoWeb.Shared.Model
         [Display(Name = "Описание события")]
         public string? EventDescription { get; set; }
 
+        [Required(ErrorMessage = "Пожалуйста, выберите локацию")]
         [Range(1, int.MaxValue, ErrorMessage = "Пожалуйста, выберите или создайте новую локацию")]
         public int LocationId { get; set; }
 
@@ -50,19 +51,18 @@ namespace GoWeb.Shared.Model
         public int MaxParticipants { get; set; }
 
         [Required(ErrorMessage = "Пожалуйста,введите стоимость участия в событии")]
-        [Range(1, int.MaxValue, ErrorMessage = "Стоимость участия в событии должна быть положительной")]
+        [Range(0, int.MaxValue, ErrorMessage = "Стоимость участия в событии должна быть положительной")]
         [Display(Name = " Стоимость участия в событии")]
         public decimal Price { get; set; }
 
         [Display(Name = "Организатор события")]
-        public string? OrganizerId { get; set; } = string.Empty;
+        public string? OrganizerId { get; set; } = default!;
 
         [Required(ErrorMessage = "Пожалуйста, выберите тип события")]
         [Range(1, int.MaxValue, ErrorMessage = "Пожалуйста, выберите существующий тип события")]
         [Display(Name = "Тип события")]
         public int EventTypeId { get; set; }
 
-        [Required(ErrorMessage = "Пожалуйста,добавьте изображение для события")]
         [Display(Name = "Изображение превью события")]
         public string? ImagePath { get; set; }
 

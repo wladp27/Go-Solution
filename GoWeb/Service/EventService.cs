@@ -18,6 +18,7 @@ using GoWeb.Repositories;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Security.Claims;
 using GoWeb.Shared.Models;
+using GoWeb.Shared.Model;
 
 namespace GoWeb.Service
 {
@@ -186,10 +187,26 @@ namespace GoWeb.Service
             return idEvent;
         }
 
-
-   
-
         
+        public async Task<int> AddAsync(EventDTO ev)
+        {
+            var eventDB = mapper.Map<Event>(ev);
+            var idEvent = await eventRepository.AddAsync(eventDB); //условие на счёт если сохранение невозможно, например такое событие с данным временем уже существует
+            if (ev.StatusEventId == (int)StatusEventConts.Published)
+            {
+                var eventView = mapper.Map<EventSummaryDTO>(eventDB);
+                eventView.Location = mapper.Map<LocationCreateViewModel>(await locationRepository.GetByIdAsync(ev.LocationId)); // сделать для локации кеш
+                var timeLive = ev.EndTime - DateTimeOffset.Now;
+                if (timeLive > TimeSpan.Zero)
+                {
+                    cache.Set(new EventCacheKey(eventView.Id), eventView, new MemoryCacheEntryOptions().SetAbsoluteExpiration(timeLive));
+                }
+                RemoveCaheFilters(eventView);
+            }
+            return idEvent;
+        }
+
+
 
         public async Task<EventSummaryDTO?> GetPublichEventByIdAsync(int id)
         {
