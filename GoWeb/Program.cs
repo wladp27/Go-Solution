@@ -9,8 +9,8 @@ using GoWeb.Interfaces;
 using GoWeb.Repositories;
 using GoWeb.Service;
 using Microsoft.AspNetCore.Authorization;
-using GoWeb.Filters.Authorization;
 using Serilog;
+using GoWeb.Shared.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 

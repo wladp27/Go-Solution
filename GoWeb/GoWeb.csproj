@@ -35,4 +35,8 @@
 		<ProjectReference Include="..\GoWeb.Shared\GoWeb.Shared.csproj" />
 		<ProjectReference Include="..\GoWebApplication.Db\GoWebApplication.Db.csproj" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Filters\Authorization\" />
+	</ItemGroup>
 </Project>

@@ -3,12 +3,15 @@
 @using GoWeb.Shared.Features.Effects
 @using GoWeb.Shared.Features.Event.Components.Event_Details
 @using GoWeb.Shared.Features.Shared
+@using GoWeb.Shared.Security
+
+
 
 
 
 @page "/event-details/{IdEvent:int}"
 
-
+@inject IAuthorizationService AuthorizationService
 @inject NavigationManager navigationManager
 @inject IMediator mediator
 @inject HttpClient httpClient
@@ -35,8 +38,15 @@
             <button class="btn btn-outline-secondary btn-sm px-3" @onclick="GoBack">
                 <i class="bi bi-arrow-left me-1"></i> Назад
             </button>
+            @if (canManage)
+            {
+                <button class="btn btn-outline-secondary mt-3 float-right"
+                        title="Edit">
+                    <i class="bi bi-pencil"></i> Редактировать
+                </button>
+            } 
         </div>
-
+       
         <HeaderEvent currentEvent="currentEvent"></HeaderEvent>
 
         <div class="row g-4">
@@ -74,7 +84,7 @@
     private List<UserPrewievDTO> users = new();
     private bool isRegisteredInEvent = false;
     private string? _currentUserId;
-
+    private bool canManage = false;
 
 
 
@@ -85,7 +95,15 @@
         _isAuthenticated = user.Identity?.IsAuthenticated ?? false;
         _currentUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         await LoadEventUsersAsync();
+
+
+        var authResult = await AuthorizationService.AuthorizeAsync(authState.User, currentEvent, new OrginizerOrAdminRequirement());
+        canManage = authResult.Succeeded;
     }
+
+
+
+
 
     private async Task LoadEventUsersAsync()
     {

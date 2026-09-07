@@ -2,6 +2,8 @@
 @using GoWeb.Shared.Features.Event.Components
 @using Microsoft.AspNetCore.Components.Authorization
 @page "/my-events"
+@attribute [Authorize]
+
 @inject IMediator mediator
 @inject ToastService toastService
 <h3>Мои события</h3>
@@ -28,6 +30,9 @@
 @code {
 	private List<EventSummaryDTO> list { get; set; } = default!;
 	private bool logading=false;
+	private bool canManage = false;
+	private Task<AuthenticationState> AuthStateTask { get; set; } = null!;
+
 	protected override async Task OnInitializedAsync()
 	{
 		try
@@ -48,5 +53,7 @@
 		}
 	}
 
+
+	
 
 }
