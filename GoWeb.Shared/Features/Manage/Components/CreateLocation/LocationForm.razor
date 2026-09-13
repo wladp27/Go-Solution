@@ -17,7 +17,7 @@
     <div class="mb-3">
         <label class="form-label">Город события</label>
         <InputSelect class="form-control" @bind-Value="model.CityId">
-            <option value="">Выберите город...</option>
+            <option value="">Выберите город...</option> 
             @if (cities != null)
             {
                 @foreach (var city in cities)

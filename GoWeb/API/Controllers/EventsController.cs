@@ -43,9 +43,9 @@ namespace GoWeb.API.Controllers
             var ev = await eventService.GetEventByIdAsync(id);
             if (ev != null)
             {
-                return new GetEventRequest.Response(ev);
+                return GetEventRequest.Response.Success(ev);
             }
-            return NotFound(new { message = $"Событие с ID {id} не найдено." });
+            return NotFound(GetEventRequest.Response.Failure("Событие не найдено."));
         }
 
         [HttpGet(GetUsersFromEventRequest.RouteTemplate)]

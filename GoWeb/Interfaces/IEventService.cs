@@ -13,6 +13,7 @@ namespace GoWeb.Interfaces
         public Task<List<CommandViewModel>> GetCommandRecreateEventAsync();
         public Task<int> AddAsync(Event ev);
         public Task<int> AddAsync(EventDTO ev);
+        public Task UpdateAsync(EventDTO ev);
         public Task<EventFilterDTO> GetDataForFilter();
         public Task<List<EventTypeDTO>> GetTypesEventsForCity(int idCity);
         public Task<EventSummaryDTO?> GetPublichEventByIdAsync(int id);

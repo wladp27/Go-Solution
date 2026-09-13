@@ -13,7 +13,7 @@ namespace GoWeb.Shared.Security
     {
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OrginizerOrAdminRequirement requirement, EventSummaryDTO resource)
         {
-            if (context.User.IsInRole("Администратор"))
+            if (context.User.IsInRole("Admin"))
                 context.Succeed(requirement);
             return Task.CompletedTask;
         }

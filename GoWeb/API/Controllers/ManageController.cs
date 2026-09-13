@@ -22,5 +22,15 @@ namespace GoWeb.API.Controllers
            var idEvent = await eventService.AddAsync(eventCreate);
            return Ok(CreateEventRequest.Response.Success(idEvent));
         }
+
+
+        [HttpPut(EditEventRequest.RouteTemplate)]
+        public async Task<ActionResult<EditEventRequest.Response>> EditEvent([FromBody] EventDTO eventEdit)
+        {
+           await eventService.UpdateAsync(eventEdit);
+           return Ok(EditEventRequest.Response.Success());
+        }
+
+
     }
 }

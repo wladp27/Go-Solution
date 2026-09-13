@@ -39,7 +39,7 @@ namespace GoWeb.Shared.Models
 
         public string? OrganizerId { get; set; } = string.Empty;
 
-        public int? StatusEventId { get; set; }
+        public int StatusEventId { get; set; }
         public int? CountDaysRecreate { get; set; }
         public  int RequiredRating { get; set; } 
 

@@ -35,7 +35,7 @@
         <FormSection >
             <div class="col-md-6">
                 <label class="form-label">Тип события</label>
-                <SelectTypeEvent @bind-Value="eventForm.EventTypeId"></SelectTypeEvent>
+                <SelectTypeEvent @bind-Value="eventForm.EventTypeId"></SelectTypeEvent> 
                 <ValidationMessage For="@(() => eventForm.EventTypeId)" class="text-danger" />
             </div>
             <div class="col-md-6">
@@ -58,7 +58,7 @@
                 <ValidationMessage For="@(() => eventForm.StartTime)" class="text-danger" />
             </div>
             <div class="col-md-6">
-                <label class="form-label">Конец</label>
+                <label class="form-label">Конец</label> 
                 <InputDateTimeOffset @bind-Value="eventForm.EndTime" />
                 <ValidationMessage For="@(() => eventForm.EndTime)" class="text-danger" />
             </div>
@@ -83,7 +83,7 @@
         <FormSection Title="Загрузка изображения">
             @if (!string.IsNullOrEmpty(eventForm.ImagePath))
             {
-                <div class="col-md-6">
+                <div class="col-md-6"> 
                     <div class="image-preview-container">
                         <img src="@(httpClient.BaseAddress + eventForm.ImagePath)" alt="Preview" class="preview-img" />
                         <button type="button" class="remove-btn" @onclick="RemoveEventImage" title="Удалить картинку">
@@ -94,7 +94,7 @@
             }
             <div class="col-md-6">
                 <InputFile OnChange="LoadEventImage" class="form-control-file" id="eventImage" accept=".png,.jpg,.jpeg" />
-                <ValidationMessage For="@(() => eventImage)" class="text-danger" />
+                <ValidationMessage For="@(() => eventForm.ImagePath)" class="text-danger" />
             </div>
         </FormSection>
     <button type="submit" class="btn btn-primary"> <span>Создать событие</span> </button>

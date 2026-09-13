@@ -192,21 +192,35 @@ namespace GoWeb.Service
         {
             var eventDB = mapper.Map<Event>(ev);
             var idEvent = await eventRepository.AddAsync(eventDB); //условие на счёт если сохранение невозможно, например такое событие с данным временем уже существует
-            if (ev.StatusEventId == (int)StatusEventConts.Published)
+            await UpdateCache(eventDB);
+            return idEvent;
+        }
+
+
+        public async Task UpdateAsync(EventDTO ev)
+        {
+            var eventDB = mapper.Map<Event>(ev);
+            await eventRepository.Update(eventDB);
+            cache.Remove(new EventCacheKey(eventDB.Id));
+            await UpdateCache(eventDB);
+
+
+        }
+
+        public async Task UpdateCache(Event eventDB)
+        {
+            if (eventDB.StatusEventId == (int)StatusEventConts.Published)
             {
                 var eventView = mapper.Map<EventSummaryDTO>(eventDB);
-                eventView.Location = mapper.Map<LocationCreateViewModel>(await locationRepository.GetByIdAsync(ev.LocationId)); // сделать для локации кеш
-                var timeLive = ev.EndTime - DateTimeOffset.Now;
+                eventView.Location = mapper.Map<LocationCreateViewModel>(await locationRepository.GetByIdAsync(eventDB.LocationId.Value)); // сделать для локации кеш
+                var timeLive = eventDB.EndTime - DateTimeOffset.Now;
                 if (timeLive > TimeSpan.Zero)
                 {
                     cache.Set(new EventCacheKey(eventView.Id), eventView, new MemoryCacheEntryOptions().SetAbsoluteExpiration(timeLive));
                 }
                 RemoveCaheFilters(eventView);
             }
-            return idEvent;
         }
-
-
 
         public async Task<EventSummaryDTO?> GetPublichEventByIdAsync(int id)
         {

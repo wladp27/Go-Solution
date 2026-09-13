@@ -1,0 +1,169 @@
+﻿@using BootstrapBlazor.Components
+@using GoWeb.Shared.Features.Effects
+@using GoWeb.Shared.Features.Manage.Components.EventForm
+@using GoWeb.Shared.Features.Shared
+@using GoWeb.Shared.Model
+@using GoWeb.Shared.Models
+@using GoWeb.Shared.Requests
+@using GoWeb.Shared.Сonstants
+@using MediatR
+@using Microsoft.JSInterop
+@using static GoWeb.Shared.Model.EventDTO
+
+@page "/edit-event/{id:int}"
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+@inject IJSRuntime JS
+
+<div class="container py-4">
+    @if (isLoading)
+    {
+        <Loader Message="Загружаем информацию о событии.."></Loader>
+    }
+    else if (eventEdit == null)
+    {
+        <div class="my-5">
+            <StatusMessage Message="Событие не найдено или было удалено" Icon="bi-calendar-x" />
+            <div class="text-center mt-3">
+                <button class="btn btn-outline-primary" @onclick="GoBack">Вернуться назад</button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="container my-5">
+            <div class="row justify-content-center">
+                <div class="col-12 col-sm-8 col-md-6 col-lg-8">
+                    <h2 class="h3 fw-bold text-dark mb-2 text-center">Создать событие</h2>
+                    <EventForm Event="eventEdit" OnSubmit="EditEvent"></EventForm>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public int IdEvent { get; set; }
+
+    private bool isLoading = false;
+    private EventSummaryDTO? eventSummaty;
+    private EventDTO eventEdit =default!;
+    @inject IMediator mediator
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadEventAsync();
+        
+
+    }
+
+
+    private async Task LoadEventAsync()
+    {
+        isLoading = true;
+        var state = navigationManager.HistoryEntryState;
+        bool loadedFromState = false;
+
+        if (!string.IsNullOrEmpty(state))
+        {
+            var parsedEvent = System.Text.Json.JsonSerializer.Deserialize<EventSummaryDTO>(state);
+            if (parsedEvent != null && parsedEvent.Id == IdEvent)
+            {
+                eventSummaty = parsedEvent;
+                loadedFromState = true;
+            }
+        }
+
+        if (!loadedFromState)
+        {
+            var response = await mediator.Send(new GetEventRequest(IdEvent));
+            if (response.IsSuccess)
+            {
+                eventSummaty = response.EventSummary;
+            }
+            else
+            {
+                await toastService.Error("Ошибка", response.ErrorMessage ?? "Не удалось загрузить событие");
+            }
+        }
+        if (eventSummaty != null)
+        {
+            eventEdit=  new EventDTO
+                        {
+                            Id = eventSummaty.Id,
+                            EventName = eventSummaty.EventName,
+                            EventDescription = eventSummaty.EventDescription,
+                            StartTime = eventSummaty.StartTime,
+                            EndTime = eventSummaty.EndTime,
+                            LocationId = eventSummaty.Location.Id,
+                            MaxParticipants = eventSummaty.MaxParticipants,
+                            MinParticipants = eventSummaty.MinParticipants,
+                            RequiredRating = eventSummaty.RequiredRating,
+                            ImagePath = eventSummaty.ImagePath,
+                            Price=eventSummaty.Price,
+                            OrganizerId= eventSummaty.OrganizerId,
+                            EventTypeId = eventSummaty.EventTypeId,
+                            StatusEventId = eventSummaty.StatusEventId,
+                            CountDaysRecreate = eventSummaty.CountDaysRecreate
+                        };  
+        }
+        isLoading = false;
+    }
+
+    private async Task EditEvent(EventDTO eventUpdate, IBrowserFile browserFile)
+    {
+        if (eventUpdate != null)
+        {
+            if (eventUpdate.imageAction == ImageAction.Add && browserFile != null)
+            {
+                await removeImage(eventEdit.ImagePath ?? "");
+                var result = await mediator.Send(new AddImageEventRequest(browserFile));
+                if (result.IsSuccess)
+                {
+                    eventUpdate.ImagePath = result.Data;
+                    var response = await mediator.Send(new EditEventRequest(eventUpdate));
+                    if (response.IsSuccess)
+                    {
+                        await toastService.Success("Успешно", "Событие успешно обновлено.");
+                        navigationManager.NavigateTo(Routes.EventDetails.Replace("{id}", eventUpdate.Id.ToString()));
+                    }
+                    else
+                    {
+                        await toastService.Error("Ошибка", $"{response.ErrorMessage}");
+                        return;
+                    }
+                }
+                else
+                {
+                    await toastService.Error("Ошибка", $"{result.ErrorMessage}");
+                    return;
+                }
+            }
+        }
+        else
+        {
+            await toastService.Error("Ошибка", "Данные события не могут быть пустыми.");
+            return;
+        }
+    }
+
+    private async Task GoBack()
+    {
+        await JS.InvokeVoidAsync("history.back");
+    }
+
+    private async Task removeImage(string imagePath)
+    {
+        if (String.IsNullOrEmpty(imagePath))
+        {
+            var deleteResult = await mediator.Send(new DeleteImageEventRequest(eventEdit.ImagePath));
+            if (!deleteResult.IsSuccess)
+            {
+                await toastService.Error("Ошибка", $"{deleteResult.ErrorMessage}");
+                return;
+            }
+        }
+    }
+}

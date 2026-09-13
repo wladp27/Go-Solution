@@ -4,12 +4,13 @@
 @using GoWeb.Shared.Features.Event.Components.Event_Details
 @using GoWeb.Shared.Features.Shared
 @using GoWeb.Shared.Security
+@using GoWeb.Shared.Сonstants
 
 
 
 
 
-@page "/event-details/{IdEvent:int}"
+@page "/event-details/{id:int}"
 
 @inject IAuthorizationService AuthorizationService
 @inject NavigationManager navigationManager
@@ -41,7 +42,7 @@
             @if (canManage)
             {
                 <button class="btn btn-outline-secondary mt-3 float-right"
-                        title="Edit">
+                        title="Edit" @onclick="EditEvent">
                     <i class="bi bi-pencil"></i> Редактировать
                 </button>
             } 
@@ -158,5 +159,8 @@
         await JS.InvokeVoidAsync("history.back");
     }
 
-    
+    private void EditEvent()
+    {
+        navigationManager.NavigateTo(Routes.EditEvent.Replace("{id}", IdEvent.ToString()));
+    }
 }

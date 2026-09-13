@@ -16,7 +16,7 @@ namespace GoWeb.Shared.Requests
         public class Response : OperationResult<int>
         {
             [JsonConstructor]
-            public Response(bool isSuccess,  int data, string errorMessage): base(isSuccess, data, errorMessage) { }
+            public Response(bool isSuccess,  int Data, string errorMessage): base(isSuccess, Data, errorMessage) { }
             public int EventId => Data;
             public new static Response Success(int value) => new(true, value, string.Empty);
             public new static Response Failure(string errorMessage) => new(false, default!, errorMessage);

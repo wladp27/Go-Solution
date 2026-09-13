@@ -47,8 +47,7 @@ namespace GoWeb.Shared.Service
             var claimsIdCity = user.FindFirst(Claims.idCity);
             if (claimsIdCity != null && int.TryParse(claimsIdCity.Value, out int cityId))
             {
-                _idSelectedCity = cityId;
-                NotifyStateChanged();
+                SetIdCity(cityId);
             }
             else
             {

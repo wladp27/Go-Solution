@@ -24,6 +24,9 @@
 		<Folder Include="Features\Auth\Components\" />
 		<Folder Include="Features\City\Components\" />
 		<Folder Include="Features\Location\Components\" />
+		<Folder Include="Features\Role\Components\" />
+		<Folder Include="Features\Role\Pages\" />
+		<Folder Include="Features\Role\Handlers\" />
 		<Folder Include="Features\TypeEvent\Pages\" />
 	</ItemGroup>
 
