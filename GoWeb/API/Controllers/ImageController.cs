@@ -2,6 +2,7 @@
 using GoWeb.Shared.Model;
 using GoWeb.Shared.Requests;
 using Microsoft.AspNetCore.Mvc;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace GoWeb.API.Controllers
 {
@@ -48,5 +49,35 @@ namespace GoWeb.API.Controllers
             }
             return BadRequest(AddImageEventRequest.Response.Failure("Ошибка загрузки изображения"));
         }
+
+
+        [HttpDelete(DeleteImageEventRequest.RouteTemplate)]
+        public async Task<ActionResult<DeleteImageEventRequest.Response>> DeleteImage(string nameImage)
+        {
+            if (string.IsNullOrWhiteSpace(nameImage))
+            {
+                return BadRequest(DeleteImageEventRequest.Response.Failure("Имя файла не указано"));
+            }
+
+            string safeFileName = Path.GetFileName(nameImage);
+            string uploadsFolder = Path.Combine(webHostEnvironment.WebRootPath, "images", "events");
+            string filePath = Path.Combine(uploadsFolder, safeFileName);
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound(DeleteImageEventRequest.Response.Failure("Файл не найден"));
+            }
+            try
+            {
+                System.IO.File.Delete(filePath);
+            }
+            catch (IOException)
+            {
+                return StatusCode(500, DeleteImageEventRequest.Response.Failure($"Ошибка доступа к файлу"));
+            }
+
+            return Ok(DeleteImageEventRequest.Response.Success());
+        }
+    
+
     }
 }
