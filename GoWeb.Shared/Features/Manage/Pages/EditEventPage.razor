@@ -45,7 +45,7 @@
 @code {
 
     [Parameter]
-    public int IdEvent { get; set; }
+    public int Id { get; set; }
 
     private bool isLoading = false;
     private EventSummaryDTO? eventSummaty;
@@ -69,7 +69,7 @@
         if (!string.IsNullOrEmpty(state))
         {
             var parsedEvent = System.Text.Json.JsonSerializer.Deserialize<EventSummaryDTO>(state);
-            if (parsedEvent != null && parsedEvent.Id == IdEvent)
+            if (parsedEvent != null && parsedEvent.Id == Id)
             {
                 eventSummaty = parsedEvent;
                 loadedFromState = true;
@@ -78,7 +78,7 @@
 
         if (!loadedFromState)
         {
-            var response = await mediator.Send(new GetEventRequest(IdEvent));
+            var response = await mediator.Send(new GetEventRequest(Id));
             if (response.IsSuccess)
             {
                 eventSummaty = response.EventSummary;

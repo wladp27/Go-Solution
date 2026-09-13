@@ -61,7 +61,7 @@
 
                         <JoinLeaveButton IsAuthenticated="_isAuthenticated"
                                          IsRegisteredInEvent="isRegisteredInEvent"
-                                         IdEvent="IdEvent"
+                                         IdEvent="Id"
                                          OnChanged="LoadEventUsersAsync" />
                     </div>
                 </div>
@@ -72,7 +72,7 @@
 
 @code {
     [Parameter]
-    public int IdEvent { get; set; }
+    public int Id { get; set; }
 
     [CascadingParameter]
     private Task<AuthenticationState> AuthStateTask { get; set; } = default!;
@@ -115,12 +115,12 @@
         if (!string.IsNullOrEmpty(state))
         {
             var parsedEvent = System.Text.Json.JsonSerializer.Deserialize<EventSummaryDTO>(state);
-            if (parsedEvent != null && parsedEvent.Id == IdEvent)
+            if (parsedEvent != null && parsedEvent.Id == Id)
             {
                 currentEvent = parsedEvent;
                 loadedFromState = true;
 
-                var responseUsers = await mediator.Send(new GetUsersFromEventRequest(IdEvent));
+                var responseUsers = await mediator.Send(new GetUsersFromEventRequest(Id));
                 if (responseUsers.IsSuccess)
                 {
                     users = responseUsers.users ?? new();
@@ -134,7 +134,7 @@
 
         if (!loadedFromState)
         {
-            var response = await mediator.Send(new GetEventWithUsersRequest(IdEvent));
+            var response = await mediator.Send(new GetEventWithUsersRequest(Id));
             if (response.IsSuccess && response.EventWithUsersDTO != null)
             {
                 currentEvent = response.EventWithUsersDTO;
@@ -161,6 +161,6 @@
 
     private void EditEvent()
     {
-        navigationManager.NavigateTo(Routes.EditEvent.Replace("{id}", IdEvent.ToString()));
+        navigationManager.NavigateTo(Routes.EditEvent.Replace("{id}", Id.ToString()));
     }
 }

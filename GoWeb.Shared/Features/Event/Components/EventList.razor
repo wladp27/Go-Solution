@@ -30,7 +30,7 @@ else
         if (eventSummary != null)
         {
             var jsonModel = System.Text.Json.JsonSerializer.Serialize(eventSummary);
-            navigationManager.NavigateTo(Routes.EventDetails.Replace("{IdEvent}", eventSummary.Id.ToString()), new NavigationOptions { HistoryEntryState = jsonModel });
+            navigationManager.NavigateTo(Routes.EventDetails.Replace("{id}", eventSummary.Id.ToString()), new NavigationOptions { HistoryEntryState = jsonModel });
         }
 
     }
