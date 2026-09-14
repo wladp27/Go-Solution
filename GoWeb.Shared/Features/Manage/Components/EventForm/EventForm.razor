@@ -1,15 +1,18 @@
 ﻿@using GoWeb.Shared.Model
 @using GoWeb.Shared.Models
 @using GoWeb.Shared.Requests
+@using GoWeb.Shared.Service.State
 @using GoWeb.Shared.Сonstants
 @using MediatR
 
 @inject HttpClient httpClient
 @inject IMediator mediator
+@inject AppState appState
 
 <div class="card shadow border-0 rounded-4 p-4 bg-white">
     <EditForm Model="@eventForm" OnValidSubmit="SubmitForm">
         <DataAnnotationsValidator />
+        <FormStateTracker/>
         <ValidationSummary class="text-danger mb-3" />
         <FormSection>
             <div class="col-md-6">
@@ -18,7 +21,7 @@
                 <ValidationMessage For="@(() => eventForm.EventName)" class="text-danger" />
             </div>
             <div class="col-md-6">
-                <label class="form-label">Стоимость участия</label>
+                <label class="form-label">Стоимость участия</label> 
                 <InputNumber @bind-Value="eventForm.Price" class="form-control" />
                 <ValidationMessage For="@(() => eventForm.Price)" class="text-danger" />
             </div>
@@ -152,7 +155,7 @@
         }
         else
         {
-            eventForm = new EventDTO();
+            eventForm = appState.NewEventState.GetEvent(); 
         }
     }
 

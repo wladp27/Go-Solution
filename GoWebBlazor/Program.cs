@@ -2,6 +2,7 @@ using GoWeb.Shared.Features.Auth.Handlers;
 using GoWeb.Shared.Interfaces;
 using GoWeb.Shared.Security;
 using GoWeb.Shared.Service;
+using GoWeb.Shared.Service.State;
 using GoWebBlazor;
 using GoWebBlazor.Service;
 using Microsoft.AspNetCore.Authorization;
@@ -29,7 +30,7 @@ builder.Services.AddMediatR(cfg =>
 });
 builder.Services.AddScoped<CityService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
-
+builder.Services.AddScoped<AppState>();
 builder.Services.AddScoped<IAuthorizationHandler, CheckAdminHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, CheckOrganizerHandler>();
 
