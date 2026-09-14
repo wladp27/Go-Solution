@@ -14,7 +14,7 @@ namespace GoWeb.Shared.Models
         [Required(ErrorMessage = "Пожалуйста,выберите город события")]
 
         [Display(Name = "Город события")]
-        public int? CityId { get; set; }
+        public int CityId { get; set; }
 
         public List<CityDTO>? Cities { get; set; }   //удалить 
 

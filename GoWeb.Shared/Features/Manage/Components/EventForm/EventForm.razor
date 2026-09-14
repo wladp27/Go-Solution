@@ -77,7 +77,7 @@
             </div>
         </FormSection>
         <FormSection>
-            <SelectLocation @bind-Value="eventForm.LocationId"></SelectLocation>
+            <SelectLocation Selectedlocation="Location" @bind-Value="eventForm.LocationId"></SelectLocation>
             <ValidationMessage For="@(() => eventForm.LocationId)" class="text-danger" />
         </FormSection>
         <FormSection Title="Загрузка изображения">
@@ -107,6 +107,8 @@
 @code {
     [Parameter]
     public EventDTO? Event { get; set; }
+    [Parameter]
+    public LocationDTO? Location { get; set; }
     [Parameter,EditorRequired]
     public Func<EventDTO, IBrowserFile?, Task> OnSubmit { get; set; }
 

@@ -161,6 +161,6 @@
 
     private void EditEvent()
     {
-        navigationManager.NavigateTo(Routes.EditEvent.Replace("{id}", Id.ToString()));
+        navigationManager.NavigateTo(Routes.EditEvent.Replace("{id}", Id.ToString())); // сделать отправление локации через  NavigationManager.HistoryEntryState
     }
 }

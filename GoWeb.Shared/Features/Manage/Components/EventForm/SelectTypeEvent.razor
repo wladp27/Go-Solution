@@ -13,7 +13,8 @@
      SearchItems="SearchTypeEvent" 
      OnSelectItem="(EventTypeDTO type) => SelectType(type)" 
      FullNameItem="(EventTypeDTO type) => type.Name" 
-     InputClassValidator="@CssClass"> 
+     InputClassValidator="@CssClass"
+     SelectedItemName="@selectedNameType">
  </SearchDropdown>    
 
 
@@ -24,8 +25,29 @@
     private List<EventTypeDTO> eventTypes { get; set; } = default!;
     private List<EventTypeDTO> filteredTypes = default!;
 
+    private EventTypeDTO? selectedType;
+    private string? selectedNameType;
     // private bool IsFieldInvalid =>EditContext != null && EditContext.GetValidationMessages(FieldIdentifier).Any();
 
+    protected override async Task OnInitializedAsync()
+    {
+        if(CurrentValue!=0)
+        {
+            var response = await mediator.Send(new GetAllTypesEventsRequest());
+            if (response.IsSuccess)
+            {
+                eventTypes = response.Types ?? new();
+                selectedType = eventTypes.FirstOrDefault(t => t.Id == CurrentValue);
+                selectedNameType = selectedType?.Name;
+            }
+            else
+            {
+                await toastService.Error("Ошибка", response.Message ?? "Не удалось загрузить типы событий");
+            }
+
+        }
+
+    }
 
     protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out int result, [NotNullWhen(false)] out string validationErrorMessage)
     {
@@ -36,6 +58,7 @@
     private async Task<List<EventTypeDTO>?> SearchTypeEvent(string stringSearch) // переделать на поиск по строке
     {
         CurrentValue = 0;
+        selectedType = null;
         var typeName = stringSearch ?? "";
         if (!string.IsNullOrEmpty(typeName))
         {
@@ -58,10 +81,12 @@
     {
         if (typeEvent != null)
         {
+            selectedType = typeEvent;
             CurrentValue = typeEvent.Id;
         }
         else
         {
+            selectedType = null;
             CurrentValue = 0;
         }
     }

@@ -24,7 +24,7 @@ namespace GoWeb.Shared.Security
 
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OrginizerOrAdminRequirement requirement, EventSummaryDTO resource)
         {
-            if (context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value == resource.OrganizerId)
+            if (context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value == resource.OrganizerId && resource.OrganizerId != null)
                 context.Succeed(requirement);
             return Task.CompletedTask;
         }

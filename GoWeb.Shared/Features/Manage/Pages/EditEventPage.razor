@@ -35,7 +35,7 @@
             <div class="row justify-content-center">
                 <div class="col-12 col-sm-8 col-md-6 col-lg-8">
                     <h2 class="h3 fw-bold text-dark mb-2 text-center">Создать событие</h2>
-                    <EventForm Event="eventEdit" OnSubmit="EditEvent"></EventForm>
+                    <EventForm Location="Location" Event="eventEdit" OnSubmit="EditEvent"></EventForm>
                 </div>
             </div>
         </div>
@@ -49,14 +49,13 @@
 
     private bool isLoading = false;
     private EventSummaryDTO? eventSummaty;
+    private LocationDTO? Location;
     private EventDTO eventEdit =default!;
     @inject IMediator mediator
 
     protected override async Task OnParametersSetAsync()
     {
         await LoadEventAsync();
-        
-
     }
 
 
@@ -68,7 +67,7 @@
 
         if (!string.IsNullOrEmpty(state))
         {
-            var parsedEvent = System.Text.Json.JsonSerializer.Deserialize<EventSummaryDTO>(state);
+            var parsedEvent = System.Text.Json.JsonSerializer.Deserialize<EventSummaryDTO>(state); // Возможно стоит сделать обертку try catch
             if (parsedEvent != null && parsedEvent.Id == Id)
             {
                 eventSummaty = parsedEvent;
@@ -107,7 +106,9 @@
                             EventTypeId = eventSummaty.EventTypeId,
                             StatusEventId = eventSummaty.StatusEventId,
                             CountDaysRecreate = eventSummaty.CountDaysRecreate
-                        };  
+                        };
+            Location = eventSummaty.Location;
+
         }
         isLoading = false;
     }

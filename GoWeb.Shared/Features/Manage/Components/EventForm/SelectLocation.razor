@@ -16,7 +16,7 @@
 {
     <div class="row">
         <div class="col-md-6">
-            <InputSelect @bind-Value="selectedIdCity" class="form-select" disabled="@disabled">
+            <InputSelect @bind-Value="selectedIdCity" @bind-Value:after="OnCityChanged" class="form-select" disabled="@disabled">
                 <option value=0>--Выбрать--</option>
                 @foreach (var city in cities ?? new())
                 {
@@ -32,7 +32,8 @@
                 OnSelectItem="(LocationPreviewDTO location) => SelectFilteredLocation(location)"
                 FullNameItem="(LocationPreviewDTO location) => location.Address"
                 InputClassValidator="@CssClass"
-                disabled="@disabled">
+                disabled="@disabled"
+                SelectedItemName="@(selectedNameAddress ?? "")">
                 </SearchDropdown>
             }
         </div>
@@ -56,17 +57,6 @@ else
             </div>
         </div>
     }
-    else
-    {
-        <div class="row">
-            <div class="col-md-6">
-                <input class="form-control " type="text" value="@(cities.FirstOrDefault(c => c.Id == selectedIdCity)?.NameCity ?? "Неизвестный город")" disabled />
-           </div>
-           <div class="col-md-6">
-                <input class="form-control " type="text" value="@selectedNameAddress" disabled />
-           </div>
-        </div>
-    }
  }
 
 <div class="form-check form-switch">
@@ -79,6 +69,9 @@ else
 
 
 @code {
+    [Parameter]
+    public LocationDTO? Selectedlocation { get; set; }
+
     private int selectedIdCity;
     private int selectedIdLocation;
     private List<CityDTO> cities = default!;
@@ -91,6 +84,8 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+
+
         var result = await cityService.GetCities();
         if(result.IsSuccess)
         {
@@ -100,6 +95,12 @@ else
         {
             cities = new();
             disabled = true;
+        }
+        if (Selectedlocation != null)
+        {
+            selectedIdCity = Selectedlocation.CityId;
+            CurrentValue = Selectedlocation.Id;
+            selectedNameAddress = Selectedlocation?.Address ?? ""; 
         }
     }
 
@@ -124,6 +125,7 @@ else
     private async Task<List<LocationPreviewDTO>> SearchLocation(string strinSearch) 
     {
         CurrentValue = 0;
+        Selectedlocation = null;
         var locationName = strinSearch ?? "";
         if (!disabled && !string.IsNullOrEmpty(locationName) && selectedIdCity!=0)
         {
@@ -142,10 +144,6 @@ else
         return new();
     }
 
-    protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out int result, [NotNullWhen(false)] out string validationErrorMessage)
-    {
-        throw new NotImplementedException();
-    }
 
     private async Task HandleLocationCreated(LocationCreateDTO locationCreate)
     {
@@ -153,6 +151,7 @@ else
         selectedIdCity = locationCreate.CityId;
         selectedNameAddress = locationCreate.Address;
         isSelectedLocation = true;
+        isCreatingNew = false;
     }
 
     private async Task CheckBoxCreatingLocation()
@@ -167,5 +166,22 @@ else
         selectedIdCity = 0;
         selectedNameAddress = "";
         isSelectedLocation = false;
+        Selectedlocation = null;
     }
+
+
+    private void OnCityChanged()
+    {
+        CurrentValue = 0;
+        selectedNameAddress = "";
+        isSelectedLocation = false;
+        Selectedlocation = null;
+    }
+
+
+    protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out int result, [NotNullWhen(false)] out string validationErrorMessage)
+    {
+        throw new NotImplementedException();
+    }
+
 }
