@@ -1,8 +1,10 @@
 ﻿@using BootstrapBlazor.Components
 @using GoWeb.Shared.Features.Layout.Shared.Components
 @using GoWeb.Shared.Service
+@using GoWeb.Shared.Service.State
 @inject CityService cityService
 @inject ToastService toastService
+@inject AppState appState
 @inject AuthenticationStateProviderCustom authenticationStateProvider
 @implements IDisposable
 
@@ -30,7 +32,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        authenticationStateProvider.OnChange += OnAuthStateChanged;
+        appState.selectCityState.OnChange += OnUpdateCityIdStateChanged;
+        selectedIdCity = appState.selectCityState.SelectedCityId ;
         var result = await cityService.GetCities();
         if (result.IsSuccess)
         {
@@ -41,31 +44,23 @@
             await toastService.Error("Ошибка", result.ErrorMessage);
             StateHasChanged();  //иначе в интерфейсе не обновится вывод ошибки сверху
         }
-
     }
-    protected override async Task OnParametersSetAsync()
+
+
+    private async void OnUpdateCityIdStateChanged(int idCity)
     {
-        selectedIdCity = await cityService.GetIdCityInClaims();
+        selectedIdCity = idCity;
         StateHasChanged();
     }
 
-    private async void OnAuthStateChanged()
+    private  async Task OnCityChanged(int newCityId)
     {
-        selectedIdCity = await cityService.GetIdCityInClaims();
-        StateHasChanged();
-    }
-
-    private  void OnCityChanged(int newCityId)
-    {
-		selectedIdCity = newCityId; 
-		cityService.SetIdCity(newCityId);
-
-		
+        await appState.selectCityState.SetIdCity(newCityId);
 	}
 
 
     public void Dispose()
     {
-        authenticationStateProvider.OnChange -= StateHasChanged;
+        appState.selectCityState.OnChange -= OnUpdateCityIdStateChanged;
     }
 }

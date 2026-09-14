@@ -2,9 +2,11 @@
 @inject NavigationManager NavManager
 @inject CityService cityService
 @inject ToastService toastService
-@using GoWeb.Shared.Models
+@inject AppState appState
 @using BootstrapBlazor.Components
+@using GoWeb.Shared.Models
 @using GoWeb.Shared.Service
+@using GoWeb.Shared.Service.State
 
 
 <EditForm Model="@FilterEvent" OnValidSubmit="SubmitForm">
@@ -80,7 +82,7 @@
 
         if (FilterEvent.SelectedCity == 0)
         {
-            FilterEvent.SelectedCity = cityService.SelectedCity;
+            FilterEvent.SelectedCity = appState.selectCityState.SelectedCityId;
         }
 
 
