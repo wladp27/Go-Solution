@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GoWeb.Shared.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -7,10 +8,20 @@ namespace GoWeb.Shared.Service.State
     public class AppState
     {
         public NewEventState NewEventState { get; } 
+        public readonly ISelectCityState selectCityState;
+        private bool isInitialized = false;
 
-        public AppState()
+
+        public AppState(ISelectCityState selectCityState)
         {
             NewEventState = new NewEventState();
+            this.selectCityState = selectCityState;
+        }
+
+        public async Task Initialize()
+        {
+            await selectCityState.Initialize();
+            isInitialized = true;
         }
 
     }
