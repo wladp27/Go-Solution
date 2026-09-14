@@ -1,4 +1,7 @@
-﻿<CascadingAuthenticationState>
+﻿@using GoWeb.Shared.Service.State
+@inject AppState AppState
+
+<CascadingAuthenticationState>
     <Router AppAssembly="@typeof(AppRoute).Assembly" AdditionalAssemblies="new[] { typeof(GoWeb.Shared.Features.TypeEvent.Handlers.GetTypeEventsForCity).Assembly }">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(GoWeb.Shared.Features.Layout.MainLayout)">
@@ -14,3 +17,14 @@
         </Found>
     </Router>
 </CascadingAuthenticationState>
+
+@code
+{
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await AppState.Initialize();
+        }
+    }
+}
