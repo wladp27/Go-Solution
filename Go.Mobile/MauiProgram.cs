@@ -3,6 +3,7 @@ using GoWeb.Shared.Features.Auth.Handlers;
 using GoWeb.Shared.Interfaces;
 using GoWeb.Shared.Security;
 using GoWeb.Shared.Service;
+using GoWeb.Shared.Service.State;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Logging;
@@ -39,7 +40,7 @@ namespace Go.Mobile
 
 
             builder.Services.AddScoped<ITokenService, MauiTokenService>();
-
+            builder.Services.AddScoped<AppState>();
             builder.Services.AddScoped<IAuthorizationHandler, CheckAdminHandler>();
             builder.Services.AddScoped<IAuthorizationHandler, CheckOrganizerHandler>();
 
