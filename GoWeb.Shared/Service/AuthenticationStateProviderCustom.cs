@@ -47,7 +47,7 @@ namespace GoWeb.Shared.Service
         public async Task LogoutAsync()
         {
             await tokenService.RemoveTokenAsync();
-            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+            NotifyUserAuthentication();
         }
 
         public void NotifyUserAuthentication()
