@@ -16,24 +16,24 @@
 {
     <div class="row">
         <div class="col-md-6">
-            <InputSelect @bind-Value="selectedIdCity" @bind-Value:after="OnCityChanged" class="form-select" disabled="@disabled">
-                <option value=0>--Выбрать--</option>
+            <select @bind="selectedIdCity" @bind:after="OnCityChanged" class="form-select" disabled="@disabled">
+                <option value="0">--Выбрать--</option>
                 @foreach (var city in cities ?? new())
                 {
                     <option value="@city.Id">@city.NameCity</option>
                 }
-            </InputSelect>
+            </select>
         </div>
 
         <div class="col-md-6">
             @if (selectedIdCity != 0)
             {
                 <SearchDropdown SearchItems="SearchLocation"
-                OnSelectItem="(LocationPreviewDTO location) => SelectFilteredLocation(location)"
-                FullNameItem="(LocationPreviewDTO location) => location.Address"
-                InputClassValidator="@CssClass"
-                disabled="@disabled"
-                SelectedItemName="@(selectedNameAddress ?? "")">
+                    OnSelectItem="(LocationPreviewDTO location) => SelectFilteredLocation(location)"
+                    FullNameItem="(LocationPreviewDTO location) => location.Address"
+                    InputClassValidator="@CssClass"
+                    disabled="@disabled"
+                    SelectedItemName="@(selectedNameAddress ?? "")">
                 </SearchDropdown>
             }
         </div>
