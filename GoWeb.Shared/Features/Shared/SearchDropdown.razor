@@ -17,7 +17,7 @@
     else
     {
         <input class="form-control @InputClassValidator" type="text"
-               @oninput="Search" @attributes="AdditionalAttributes" value="@searchString " />
+               @oninput="Search" @attributes="AdditionalAttributes" value="@searchString" />
 
 
         @if (filteredItems != null && filteredItems.Count != 0 && !string.IsNullOrEmpty(searchString) && !selectedItem)
@@ -62,10 +62,15 @@
     private List<TItem> filteredItems { get; set; } =default!;
     private CancellationTokenSource? _cts;
 
+    protected override void OnInitialized()
+    {
+        searchString = SelectedItemName;
+    }
+
 
     protected override void OnParametersSet()
     {
-        searchString = SelectedItemName;
+        
         if (!string.IsNullOrEmpty(searchString))
             selectedItem = true;
     }
