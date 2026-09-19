@@ -34,7 +34,7 @@
         <div class="container my-5">
             <div class="row justify-content-center">
                 <div class="col-12 col-sm-8 col-md-6 col-lg-8">
-                    <h2 class="h3 fw-bold text-dark mb-2 text-center">Создать событие</h2>
+                    <h2 class="h3 fw-bold text-dark mb-2 text-center">Редактировать событие</h2>
                     <EventForm Location="Location" Event="eventEdit" OnSubmit="EditEvent"></EventForm>
                 </div>
             </div>
@@ -119,28 +119,25 @@
         {
             if (eventUpdate.imageAction == ImageAction.Add && browserFile != null)
             {
-                await removeImage(eventEdit.ImagePath ?? "");
+                var resultRemove = await removeImage(eventEdit.ImagePath ?? ""); // добавить id события для проверки доступа
+                if (!resultRemove)
+                    return;
                 var result = await mediator.Send(new AddImageEventRequest(browserFile));
                 if (result.IsSuccess)
                 {
                     eventUpdate.ImagePath = result.Data;
-                    var response = await mediator.Send(new EditEventRequest(eventUpdate));
-                    if (response.IsSuccess)
-                    {
-                        await toastService.Success("Успешно", "Событие успешно обновлено.");
-                        navigationManager.NavigateTo(Routes.EventDetails.Replace("{id}", eventUpdate.Id.ToString()));
-                    }
-                    else
-                    {
-                        await toastService.Error("Ошибка", $"{response.ErrorMessage}");
-                        return;
-                    }
+                    await UpdateEvent(eventUpdate);
+                    return;
                 }
                 else
                 {
                     await toastService.Error("Ошибка", $"{result.ErrorMessage}");
-                    return;
                 }
+            }
+            else if (eventUpdate.imageAction == ImageAction.None && eventUpdate.ImagePath == eventEdit.ImagePath)
+            {
+                await UpdateEvent(eventUpdate);
+                return;
             }
         }
         else
@@ -148,6 +145,7 @@
             await toastService.Error("Ошибка", "Данные события не могут быть пустыми.");
             return;
         }
+        await toastService.Error("Ошибка", "Неизвестная ошибка");
     }
 
     private async Task GoBack()
@@ -155,16 +153,34 @@
         await JS.InvokeVoidAsync("history.back");
     }
 
-    private async Task removeImage(string imagePath)
+    private async Task<bool> removeImage(string imagePath)
     {
         if (String.IsNullOrEmpty(imagePath))
         {
-            var deleteResult = await mediator.Send(new DeleteImageEventRequest(eventEdit.ImagePath));
+            var deleteResult = await mediator.Send(new DeleteImageEventRequest(imagePath));
             if (!deleteResult.IsSuccess)
             {
                 await toastService.Error("Ошибка", $"{deleteResult.ErrorMessage}");
-                return;
+                return false;
             }
         }
+        return true;
     }
+
+    private async Task UpdateEvent(EventDTO eventUpdate)
+    {
+
+        var response = await mediator.Send(new EditEventRequest(eventUpdate));
+        if (response.IsSuccess)
+        {
+            await toastService.Success("Успешно", "Событие успешно обновлено.");
+            navigationManager.NavigateTo(Routes.EventDetails.Replace("{id}", eventUpdate.Id.ToString()));
+        }
+        else
+        {
+            await toastService.Error("Ошибка", $"{response.ErrorMessage}");
+        }
+    }
+
+
 }

@@ -9,8 +9,7 @@ namespace GoWeb.Mapping
     {
         public EventTypeProfile() 
         {
-            CreateMap<EventType, EventTypeDTO>()
-                .ForMember(dest => dest.ImagePath, opt => opt.MapFrom(x => "images/eventsTypes/" + x.ImagePath)); ;
+            CreateMap<EventType, EventTypeDTO>();
             CreateMap<EventTypeDTO, EventType>();
         }
     }

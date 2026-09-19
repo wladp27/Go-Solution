@@ -1,9 +1,10 @@
 ﻿@using BootstrapBlazor.Components
 @using GoWeb.Shared.Models
-@inject HttpClient httpClient
+@using GoWeb.Shared.Сonstants
 
 
-    <div @onclick="HandleClick" style="cursor: pointer;">
+
+    <div @onclick="HandleClick" style="cursor: pointer;"> 
         <div class="card-hover-wrapper">
             <Card class="shadow-sm border-0 h-100">
                 <HeaderTemplate>
@@ -11,7 +12,7 @@
                 </HeaderTemplate>
                 <BodyTemplate>
                     <div class="d-flex justify-content-center p-2">
-                        <ImageViewer Url="@(httpClient.BaseAddress + typeEvent.ImagePath)"
+                    <ImageViewer Url="@(ImagePath.EventTypes + typeEvent.ImagePath)"
                         FileIcon="fa-solid fa-file-image"
                         ShowPlaceHolder="true"
                         class="img-fluid rounded"
@@ -31,8 +32,6 @@
 
     private async Task HandleClick()
     {
-
-            var a = httpClient.BaseAddress + typeEvent.ImagePath;
             await OnClick.InvokeAsync(typeEvent.Id);
     }
 }

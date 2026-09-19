@@ -1,10 +1,10 @@
 ﻿@using System.Globalization
-@inject HttpClient HttpClient
+@using GoWeb.Shared.Сonstants
 
 @if (SelectedEvent != null)
 {
     <div class="card card-custom h-100" @onclick="HandleClick">
-        <div style="height: 320px; background-image: linear-gradient(to top, rgba(0,0,0,1.0), transparent), url('@(HttpClient.BaseAddress + SelectedEvent.ImagePath)'); background-size: cover; background-position: center; background-repeat: no-repeat; position: relative;">
+        <div style="height: 320px; background-image: linear-gradient(to top, rgba(0,0,0,1.0), transparent), url('@(ImagePath.Image + SelectedEvent.ImagePath)'); background-size: cover; background-position: center; background-repeat: no-repeat; position: relative;">
 
             <div class="position-absolute bottom-0 start-0 p-4 text-white">
                 <h1 class="h2 fw-bold text-white mb-0">@SelectedEvent.EventName</h1>
@@ -38,7 +38,7 @@
                 <div class="event-meta text-muted small mb-2 d-flex align-items-center gap-2 text-truncate">
                     <i class="bi bi-geo-alt text-danger"></i>
                     <span class="fw-semibold text-secondary flex-shrink-0">Место:</span>
-                    <span class="text-truncate">@SelectedEvent.Location.Address</span>
+                    <span class="text-truncate">@SelectedEvent.Location.Address</span> 
                 </div>
             }
 
@@ -69,7 +69,7 @@
                         <div class="progress-bar"
                         role="progressbar"
                              style="@GetProgressStyle()"
-                        aria-valuenow="@SelectedEvent.CountRegisteredUsers"
+                        aria-valuenow="@SelectedEvent.CountRegisteredUsers" 
                         aria-valuemin="0"
                         aria-valuemax="@SelectedEvent.MaxParticipants">
                         </div>

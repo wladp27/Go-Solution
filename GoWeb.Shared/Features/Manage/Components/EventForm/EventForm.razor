@@ -58,7 +58,7 @@
             <div class="col-md-6">
                 <label class="form-label">Начало</label>
                 <InputDateTimeOffset @bind-Value="eventForm.StartTime" />
-                <ValidationMessage For="@(() => eventForm.StartTime)" class="text-danger" />
+                <ValidationMessage For="@(() => eventForm.StartTime)" class="text-danger" /> 
             </div>
             <div class="col-md-6">
                 <label class="form-label">Конец</label> 
@@ -100,7 +100,7 @@
                 <ValidationMessage For="@(() => eventForm.ImagePath)" class="text-danger" />
             </div>
         </FormSection>
-    <button type="submit" class="btn btn-primary"> <span>Создать событие</span> </button>
+    <button type="submit" class="btn btn-primary"> <span>Применить</span> </button>
     </EditForm>
     
 </div>
@@ -146,7 +146,7 @@
                 Price = Event.Price,
                 OrganizerId = Event.OrganizerId,
                 EventTypeId = Event.EventTypeId,
-                ImagePath = Event.ImagePath,
+                ImagePath = Event.ImagePath, 
                 StatusEventId = Event.StatusEventId,
                 CountDaysRecreate = Event.CountDaysRecreate,
                 imageAction = Event.imageAction,
