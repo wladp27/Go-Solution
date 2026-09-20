@@ -1,15 +1,15 @@
-﻿using Blazored.LocalStorage;
+﻿
 using GoWeb.Shared.Interfaces;
 using GoWeb.Shared.Model;
 using GoWeb.Shared.Service;
 using Microsoft.AspNetCore.Components.Authorization;
 
-namespace GoWebBlazor.Service.State
+namespace GoWeb.Shared.Service.State
 {
     public class SelectCityState :IDisposable, ISelectCityState
     {
 
-        private readonly ILocalStorageService _localStorageService;
+        private readonly IAppStorage _localStorageService;
 
         public int SelectedCityId { get;private set;}
 
@@ -18,7 +18,7 @@ namespace GoWebBlazor.Service.State
         private readonly AuthenticationStateProviderCustom authenticationStateProviderCustom;
 
 
-        public SelectCityState(ILocalStorageService localStorageService, AuthenticationStateProviderCustom authenticationStateProviderCustom) 
+        public SelectCityState(IAppStorage localStorageService, AuthenticationStateProviderCustom authenticationStateProviderCustom) 
         {
             _localStorageService = localStorageService;
             this.authenticationStateProviderCustom = authenticationStateProviderCustom;
