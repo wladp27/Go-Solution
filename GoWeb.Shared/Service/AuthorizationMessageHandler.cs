@@ -1,7 +1,7 @@
 ﻿using GoWeb.Shared.Interfaces;
 using System.Net.Http.Headers;
 
-namespace GoWeb.Shared.Features.Auth.Handlers
+namespace GoWeb.Shared.Service
 {
     public class AuthorizationMessageHandler:DelegatingHandler
     {
