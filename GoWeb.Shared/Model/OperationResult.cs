@@ -28,7 +28,7 @@ namespace GoWeb.Shared.Model
             Data = data;
         }
         public T? Data { get; set; }
-        public static OperationResult<T> Success(T data) => new(true, data);
+        public static OperationResult<T> Success(T data) => new(true, data, string.Empty);
         public new static OperationResult<T> Failure(string error) => new(false, default, error);
     }
 }

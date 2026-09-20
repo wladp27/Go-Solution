@@ -16,7 +16,7 @@ namespace GoWeb.API.Controllers
 
 
         //проверки на существование всего сделать от локации до типа события
-        [HttpPost(CreateEventRequest.RouteTemplate)]
+        [HttpPost(CreateEventRequest.Route)]
         public async Task<ActionResult<CreateEventRequest.Response>> CreateEvent([FromBody] EventDTO eventCreate)
         {
            var idEvent = await eventService.AddAsync(eventCreate);

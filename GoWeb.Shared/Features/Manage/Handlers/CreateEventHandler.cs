@@ -1,4 +1,6 @@
-﻿using GoWeb.Shared.Requests;
+﻿using GoWeb.Shared.Model;
+using GoWeb.Shared.Requests;
+using GoWeb.Shared.Service;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -18,28 +20,9 @@ namespace GoWeb.Shared.Features.Manage.Handlers
         public async Task<CreateEventRequest.Response> Handle(CreateEventRequest request, CancellationToken cancellationToken)
         {
             var client = httpClientFactory.CreateClient("TokenAPIClient");
-            try
-            {
-                var httpResponse = await client.PostAsJsonAsync(CreateEventRequest.RouteTemplate, request.eventCreate, cancellationToken);
-                if (!httpResponse.IsSuccessStatusCode)
-                {
-                    var errorContent = await httpResponse.Content.ReadFromJsonAsync<CreateEventRequest.Response>(cancellationToken);
-                    return errorContent ?? CreateEventRequest.Response.Failure("Произошла непредвиденная ошибка");
-                }
-                var content = await httpResponse.Content.ReadFromJsonAsync<CreateEventRequest.Response>(cancellationToken);
-                return content ?? CreateEventRequest.Response.Failure("Получен пустой ответ от сервера");
-            }
-            catch (HttpRequestException)
-            {
-                return CreateEventRequest.Response.Failure("Ошибка соединения с сервером");
-            }
-            catch (Exception)
-            {
-
-                return CreateEventRequest.Response.Failure("Произошла непредвиденная ошибка");
-            }
-
+            var baseResult = await client.SafePostAsJsonAsync(request, cancellationToken);
+            return CreateEventRequest.Response.CastOperation(baseResult);
         }
-      
+
     }
 }
