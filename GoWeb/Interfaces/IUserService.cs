@@ -10,10 +10,10 @@ namespace GoWeb.Interfaces
     {
 
         public  Task<List<string?>> GetIdUsersDB(int idEvent);
-        public  Task<List<UserPrewievDTO>> GetPreviewUsers(List<string>? idUsers);
+        public  Task<List<UserPrewievDTO>> GetPreviewUsers(List<string> idUsers);
         public Task<UserPrewievDTO> GetPreviewUser(string idUser);
         public Task<List<UserPrewievDTO>> GetPreviewUsersDB(List<string>? idUsers);
-        public void WriteUsersInCache(List<UserPrewievDTO> usersPreview);
+        public Task WriteUsersInCache(List<UserPrewievDTO> usersPreview);
 
 
      

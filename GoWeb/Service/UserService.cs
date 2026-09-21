@@ -4,18 +4,20 @@ using GoWeb.Interfaces;
 using GoWeb.Shared.Models;
 using GoWeb.Shared.Сonstants;
 using GoWebApplication.Db.Data;
+using GoWebApplication.Db.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace GoWeb.Service
 {
-    public class UserService:IUserService
+    public class UserService: IUserService
     {
-        private readonly IMemoryCache cache;
+        private readonly ICacheService cache;
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
         private readonly IUserRepository userRepository;
-        public UserService(IMemoryCache cache, IMapper mapper, IUserRepository userRepository, ApplicationDbContext context) 
+        public UserService(ICacheService cache, IMapper mapper, IUserRepository userRepository, ApplicationDbContext context) 
         {
             this.cache = cache;
             this.mapper = mapper;
@@ -35,13 +37,16 @@ namespace GoWeb.Service
         }
 
 
-        public async Task<List<UserPrewievDTO>> GetPreviewUsers(List<string>? idUsers)
+        public async Task<List<UserPrewievDTO>> GetPreviewUsers(List<string> idUsers)
         {
             var listUserPreview = new List<UserPrewievDTO>();
             var idUserNotInCache = new List<string>();
-            foreach (var id in idUsers)
+            var listKey = idUsers.Select(id => new UsersPreviewCacheKey(id).ToString());
+            var dictionarUserInCache = await cache.GetManyAsync<UserPrewievDTO>(listKey);
+            foreach (var id in idUserNotInCache)
             {
-                if (cache.TryGetValue(new UsersPreviewCacheKey(id), out UserPrewievDTO? userPreviewView))
+                var keyUser = new UsersPreviewCacheKey(id).ToString();
+                if (dictionarUserInCache.TryGetValue(keyUser, out UserPrewievDTO? userPreviewView))
                 {
                     listUserPreview.Add(userPreviewView);
                 }
@@ -54,7 +59,7 @@ namespace GoWeb.Service
             {
                 var userNotInCache = await GetPreviewUsersDB(idUserNotInCache);
                 listUserPreview.AddRange(userNotInCache);
-                WriteUsersInCache(userNotInCache);
+                await WriteUsersInCache(userNotInCache);
             }
             return listUserPreview;
         }
@@ -79,18 +84,20 @@ namespace GoWeb.Service
 
 
 
-        public void WriteUsersInCache(List<UserPrewievDTO> usersPreview)
+        public async Task WriteUsersInCache(List<UserPrewievDTO> usersPreview)
         {
             foreach (var userPrev in usersPreview)
             {
-                cache.Set(new UsersPreviewCacheKey(userPrev.Id), userPrev, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromHours(24)));
+                await cache.SetAsync(new UsersPreviewCacheKey(userPrev.Id).ToString(), userPrev, 
+                               new DistributedCacheEntryOptions(){ AbsoluteExpirationRelativeToNow =  TimeSpan.FromHours(24)});
             }  
         }
 
 
         public  async Task<UserPrewievDTO> GetPreviewUser(string idUser)
         {
-            if (cache.TryGetValue(new UsersPreviewCacheKey(idUser), out UserPrewievDTO? userPreviewView))
+            var userPreviewView = await cache.GetAsync<UserPrewievDTO>(new UsersPreviewCacheKey(idUser).ToString());
+            if (userPreviewView != null)
             {
                 return userPreviewView;
             }
@@ -98,12 +105,15 @@ namespace GoWeb.Service
             var userPrevDb = await GetPreviewUserDB(idUser);
             if (userPrevDb != null)
             {
-                cache.Set(new UsersPreviewCacheKey(userPrevDb.Id), userPrevDb, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromHours(24)));
+                await cache.SetAsync(new UsersPreviewCacheKey(userPrevDb.Id).ToString(), userPrevDb, new DistributedCacheEntryOptions(){ AbsoluteExpirationRelativeToNow =  TimeSpan.FromHours(24)});
             }
             return userPrevDb;
         }
 
 
-        public record UsersPreviewCacheKey(string userId);
+        public record UsersPreviewCacheKey(string userId)
+        {
+            public override string ToString() => $"users:preview:{userId}";
+        }
     }
 }
