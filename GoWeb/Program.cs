@@ -41,6 +41,11 @@ builder.Services.AddIdentity<User, IdentityRole>()
     .AddClaimsPrincipalFactory<MyUserClaimsPrincipalFactory>(); ;
 
 
+builder.Services.AddStackExchangeRedisCache(options => {
+    options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
+    options.InstanceName = "GoWeb_";
+});
+
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
