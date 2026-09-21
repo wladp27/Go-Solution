@@ -1,16 +1,17 @@
-﻿using GoWebApplication.Db.Data;
-using GoWebApplication.Db.Models;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using System.Globalization;
-using Microsoft.AspNetCore.Localization;
+﻿using GoWeb.Interfaces;
 using GoWeb.Mapping;
-using GoWeb.Interfaces;
 using GoWeb.Repositories;
 using GoWeb.Service;
-using Microsoft.AspNetCore.Authorization;
-using Serilog;
 using GoWeb.Shared.Security;
+using GoWebApplication.Db.Data;
+using GoWebApplication.Db.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.EntityFrameworkCore;
+using Serilog;
+using StackExchange.Redis;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,12 +21,8 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 builder.Host.UseSerilog();
 
-// --- ✅ БЛОК РЕГИСТРАЦИИ СЕРВИСОВ ---
 
-// Получаем строку подключения (должна быть доступна здесь)
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-// 1. Регистрация DbContext (с MySql)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(
         connectionString,
@@ -34,7 +31,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     )
 );
 
-// 2. Регистрация Identity
+
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders()
@@ -46,6 +43,8 @@ builder.Services.AddStackExchangeRedisCache(options => {
     options.InstanceName = "GoWeb_";
 });
 
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+    ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("RedisConnection")!));
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -127,8 +126,8 @@ builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddSingleton<ICommandQueue,CommandQueue>();
 builder.Services.AddHostedService<TimedBackgroundService>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+builder.Services.AddScoped<ICacheService, RedisCacheService>();
 builder.Services.AddMemoryCache();
-
 builder.Services.AddScoped<IAuthorizationHandler, CheckAdminHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, CheckOrganizerHandler>();
 
