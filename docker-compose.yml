@@ -13,6 +13,19 @@ services:
       retries: 10
       start_period: 25s
 
+  redis:
+    image: redis:alpine
+    container_name: redisContainer
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s      
+      timeout: 5s         
+      retries: 3          
+      start_period: 5s
+
   app:
     image: ghcr.io/wladp27/go-solution:latest
     ports:
@@ -23,6 +36,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+
+
 
 volumes:
   mysql_data:
