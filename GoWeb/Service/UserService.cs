@@ -43,7 +43,7 @@ namespace GoWeb.Service
             var idUserNotInCache = new List<string>();
             var listKey = idUsers.Select(id => new UsersPreviewCacheKey(id).ToString());
             var dictionarUserInCache = await cache.GetManyAsync<UserPrewievDTO>(listKey);
-            foreach (var id in idUserNotInCache)
+            foreach (var id in idUsers)
             {
                 var keyUser = new UsersPreviewCacheKey(id).ToString();
                 if (dictionarUserInCache.TryGetValue(keyUser, out UserPrewievDTO? userPreviewView))
