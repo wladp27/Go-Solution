@@ -4,18 +4,20 @@ using GoWeb.Models;
 using GoWeb.Shared.Models;
 using GoWeb.Сonstants.Cache;
 using GoWebApplication.Db.Models;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using System.Collections.Concurrent;
 
 namespace GoWeb.Service
 {
     public class EventTypeService : IEventTypeService
     {
         private readonly IEventTypeRepository eventTypeRepository;
-        private readonly IMemoryCache cache;
+        private readonly ICacheService cache;
         private static readonly SemaphoreSlim semForGetAll = new SemaphoreSlim(1, 1);
-        private static readonly SemaphoreSlim semForGetId = new SemaphoreSlim(1, 1);
+        private static readonly ConcurrentDictionary<int, SemaphoreSlim> _semaphoresById = new();
         private readonly IMapper mapper;
-        public EventTypeService(IEventTypeRepository eventTypeRepository, IMemoryCache cache, IMapper mapper) 
+        public EventTypeService(IEventTypeRepository eventTypeRepository, ICacheService cache, IMapper mapper) 
         {
             this.eventTypeRepository = eventTypeRepository;
             this.cache = cache;
@@ -24,9 +26,9 @@ namespace GoWeb.Service
         public async Task<bool> AddAsync(EventTypeDTO eventTypeView)
         {
             eventTypeView.Id = await eventTypeRepository.AddAsync(mapper.Map<EventType>(eventTypeView));
-            if (eventTypeView.Id != null)
+            if (eventTypeView.Id >0)
             {
-                cache.Set(new EventTypeCacheKey(eventTypeView.Id),eventTypeView);
+                await cache.SetAsync(new EventTypeCacheKey(eventTypeView.Id).ToString(),eventTypeView);
                 return true;
             }
             return false;
@@ -37,7 +39,7 @@ namespace GoWeb.Service
             var successDelete= await eventTypeRepository.DeleteAsync(mapper.Map<EventType>(eventType));
             if(successDelete)
             {
-                cache.Remove(new EventTypeCacheKey(eventType.Id));
+                await cache.RemoveAsync(new EventTypeCacheKey(eventType.Id).ToString());
                 return true;
             }
             return false;
@@ -45,21 +47,22 @@ namespace GoWeb.Service
 
         public async Task<List<EventTypeDTO>?> GetAllAsync()
         {
-            var eventsTypes= new List<EventTypeDTO>();
-            if(cache.TryGetValue(CacheConst.allEventTypes, out eventsTypes))
+            var (isSuccess, eventsTypes) = await cache.TryGetValueAsync<List<EventTypeDTO>>(CacheConst.allEventTypes);
+            if (isSuccess)
             {
                 return eventsTypes;
             }
             await semForGetAll.WaitAsync();
             try
             {
-                if (cache.TryGetValue(CacheConst.allEventTypes, out eventsTypes))
+                (isSuccess, eventsTypes) = await cache.TryGetValueAsync<List<EventTypeDTO>>(CacheConst.allEventTypes);
+                if (isSuccess)
                 {
                     return eventsTypes;
                 }
                 var eventsTypesDb = await eventTypeRepository.GetAllAsync();
                 eventsTypes = mapper.Map<List<EventTypeDTO>>(eventsTypesDb);
-                cache.Set(CacheConst.allEventTypes, eventsTypes, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromDays(1)));
+                await cache.SetAsync(CacheConst.allEventTypes, eventsTypes, new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromDays(1)));
             }
             finally
             {
@@ -70,31 +73,35 @@ namespace GoWeb.Service
 
         public async Task<EventTypeDTO?> GetByIdAsync(int id)
         {
-            if(cache.TryGetValue(new EventTypeCacheKey(id), out EventTypeDTO eventTypeView))
+            var (isSuccess, eventTypeView) = await cache.TryGetValueAsync<EventTypeDTO>(new EventTypeCacheKey(id).ToString());
+            if (isSuccess)
             {
                 return eventTypeView;
             }
-            await semForGetId.WaitAsync();
-            try 
+
+            var semaphore = _semaphoresById.GetOrAdd(id, _ => new SemaphoreSlim(1, 1));
+            await semaphore.WaitAsync();
+            try
             {
-                if (cache.TryGetValue(new EventTypeCacheKey(id), out  eventTypeView))
+                (isSuccess, eventTypeView) = await cache.TryGetValueAsync<EventTypeDTO>(new EventTypeCacheKey(id).ToString());
+                if (isSuccess)
                 {
                     return eventTypeView;
                 }
-                var eventTypeDb = eventTypeRepository.GetByIdAsync(id);
+                var eventTypeDb = await eventTypeRepository.GetByIdAsync(id);
                 eventTypeView = mapper.Map<EventTypeDTO>(eventTypeDb);
                 if (eventTypeDb!=null)
                 {
-                    cache.Set(new EventTypeCacheKey(id), eventTypeView);
+                    await cache.SetAsync(new EventTypeCacheKey(id).ToString(), eventTypeView);
                 }
                 else
                 {
-                    cache.Set(new EventTypeCacheKey(id), eventTypeView, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(1)));
+                    await cache.SetAsync(new EventTypeCacheKey(id).ToString(), eventTypeView, new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(1)));
                 }
             }
             finally 
             {
-                semForGetId.Release(); 
+                semaphore.Release(); 
             }
             return eventTypeView;
         }
@@ -105,12 +112,15 @@ namespace GoWeb.Service
             var successUpdate = await eventTypeRepository.Update(updateEventDb);
             if(successUpdate)
             {
-                cache.Set(new EventTypeCacheKey(eventTypeView.Id), eventTypeView);
+                await cache.SetAsync(new EventTypeCacheKey(eventTypeView.Id).ToString(), eventTypeView);
             }
             return false;
         }
 
-        public record EventTypeCacheKey(int id);
+        public record EventTypeCacheKey(int id)
+        {
+            public override string ToString() => $"EventType:summary:{id}";
+        }
 
     }
 }

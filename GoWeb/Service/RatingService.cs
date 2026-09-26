@@ -12,8 +12,8 @@ namespace GoWeb.Service
     {
 
         private readonly IRatingRepository ratingRepository;
-        private readonly IMemoryCache cache;
-        public RatingService(IRatingRepository ratingRepository, IMemoryCache cache) 
+        private readonly ICacheService cache;
+        public RatingService(IRatingRepository ratingRepository, ICacheService cache) 
         {
             this.ratingRepository = ratingRepository;
             this.cache = cache;
@@ -24,7 +24,7 @@ namespace GoWeb.Service
             var resultAdd = await ratingRepository.AddAsync(idUser, idEventType, value);
             if (resultAdd)
             {
-                cache.Remove(new UsersPreviewCacheKey(idUser));
+                await cache.RemoveAsync(new UsersPreviewCacheKey(idUser).ToString());
                 return true;
             }
             return false;
@@ -43,7 +43,7 @@ namespace GoWeb.Service
            var resultUpdate = await ratingRepository.UpdateAsync(rating);
             if(resultUpdate)
             {
-                cache.Remove(new UsersPreviewCacheKey(rating.UserId));
+                await cache.RemoveAsync((new UsersPreviewCacheKey(rating.UserId).ToString()));
                 return true;
             }
             return false;

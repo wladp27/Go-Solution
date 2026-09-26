@@ -20,7 +20,7 @@ namespace GoWeb.Interfaces
         public IQueryable<Event> GetAllEventsQueryable();
 
         public Task<Event?> GetEventWithLocationAsync(int id);
-        public Task<bool> UpdateStatusEvent(int idEvent, StatusEventConts status);
+        public Task<bool> UpdateStatusEvent(int idEvent,StatusEventConts status);
 
         public Task<bool> ExistenceEvent(int idEvent);
 

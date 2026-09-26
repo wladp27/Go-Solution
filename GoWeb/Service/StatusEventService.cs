@@ -1,79 +1,82 @@
 ﻿using GoWeb.Interfaces;
 using GoWeb.Сonstants.Cache;
 using GoWebApplication.Db.Models;
-using Microsoft.Extensions.Caching.Memory;
+using System.Collections.Concurrent;
 
 namespace GoWeb.Service
 {
     public class StatusEventService : IStatusEventService
     {
-        private readonly ICacheService cache;
-        private readonly IStatusEvent statusEventRepository;
+        private readonly ICacheService _cache;
+        private readonly IStatusEvent _statusEventRepository;
 
-        private static readonly SemaphoreSlim semForGetAll = new SemaphoreSlim(1, 1);
-        private static readonly SemaphoreSlim semForGetId = new SemaphoreSlim(1, 1);
+        private static readonly SemaphoreSlim _semForGetAll = new SemaphoreSlim(1, 1);
+        private static readonly ConcurrentDictionary<int, SemaphoreSlim> _semaphoresById = new();
 
-        public StatusEventService(ICacheService cache, IStatusEvent statusEvent) 
+        public StatusEventService(ICacheService cache, IStatusEvent statusEvent)
         {
-            this.cache = cache;
-            this.statusEventRepository = statusEvent;
+            _cache = cache;
+            _statusEventRepository = statusEvent;
         }
 
         public async Task<List<StatusEvent>> GetAllAsync()
         {
-            var resultCache = await cache.TryGetValueAsync<List<StatusEvent>>(CacheConst.allStatusesEvent);
-            var statusesEvent = resultCache.Value;
-            if (resultCache.IsSuccess)
+            var (isSuccess, statusesEvent) = await _cache.TryGetValueAsync<List<StatusEvent>>(CacheConst.allStatusesEvent);
+            if (isSuccess)
             {
                 return statusesEvent ?? new();
             }
-            await semForGetAll.WaitAsync();
+
+            await _semForGetAll.WaitAsync();
             try
             {
-                resultCache = await cache.TryGetValueAsync<List<StatusEvent>>(CacheConst.allStatusesEvent);
-                statusesEvent = resultCache.Value;
-                if (resultCache.IsSuccess)
+                (isSuccess, statusesEvent) = await _cache.TryGetValueAsync<List<StatusEvent>>(CacheConst.allStatusesEvent);
+                if (isSuccess)
                 {
                     return statusesEvent ?? new();
                 }
-                statusesEvent = await statusEventRepository.GetAllAsync();
-                await cache.SetAsync(CacheConst.allStatusesEvent, statusesEvent);
+
+   
+                statusesEvent = await _statusEventRepository.GetAllAsync();
+                await _cache.SetAsync(CacheConst.allStatusesEvent, statusesEvent);
             }
             finally
             {
-                semForGetAll.Release();
+                _semForGetAll.Release();
             }
-            return statusesEvent;
+
+            return statusesEvent ?? new();
         }
 
         public async Task<StatusEvent?> GetByIdAsync(int id)
         {
-            var resultCache = await cache.TryGetValueAsync<StatusEvent>(new StatusEventCacheKey(id).ToString());
-            var statusEvent = resultCache.Value;
-            if (resultCache.IsSuccess)
+            string cacheKey = new StatusEventCacheKey(id).ToString();
+
+            var (isSuccess, statusEvent) = await _cache.TryGetValueAsync<StatusEvent>(cacheKey);
+            if (isSuccess)
             {
                 return statusEvent;
             }
-            await semForGetId.WaitAsync();
+            var semaphore = _semaphoresById.GetOrAdd(id, _ => new SemaphoreSlim(1, 1));
+            await semaphore.WaitAsync();
             try
             {
-                resultCache = await cache.TryGetValueAsync<StatusEvent>(new StatusEventCacheKey(id).ToString());
-                statusEvent = resultCache.Value;
-                if (resultCache.IsSuccess)
+                (isSuccess, statusEvent) = await _cache.TryGetValueAsync<StatusEvent>(cacheKey);
+                if (isSuccess)
                 {
                     return statusEvent;
                 }
-                statusEvent = await statusEventRepository.GetByIdAsync(id);
-                await cache.SetAsync(new StatusEventCacheKey(id).ToString(), statusEvent);
+
+                statusEvent = await _statusEventRepository.GetByIdAsync(id);
+                await _cache.SetAsync(cacheKey, statusEvent);
             }
             finally
             {
-                semForGetId.Release();
+                semaphore.Release();
             }
+
             return statusEvent;
         }
-
-       
     }
 
     public record StatusEventCacheKey(int id)

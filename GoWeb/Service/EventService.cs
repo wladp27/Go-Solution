@@ -1,111 +1,89 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using GoWeb.Commands.Event;
 using GoWeb.Interfaces;
 using GoWeb.Models;
-using GoWebApplication.Db.Models;
-using Microsoft.EntityFrameworkCore;
-using AutoMapper.QueryableExtensions;
-using System.Linq;
+using GoWeb.Shared.Model;
+using GoWeb.Shared.Models;
 using GoWeb.Сonstants;
 using GoWebApplication.Db.Data;
-using MediatR;
-using GoWeb.Commands.Event;
-using Microsoft.Extensions.Caching.Memory;
-using System.Threading;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using GoWeb.Repositories;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Security.Claims;
-using GoWeb.Shared.Models;
-using GoWeb.Shared.Model;
+using GoWebApplication.Db.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Collections.Concurrent;
 
 namespace GoWeb.Service
 {
     public class EventService : IEventService
     {
-        private readonly IEventRepository eventRepository;
-        private readonly IEventTypeService eventTypeService;
-        private readonly IUserRepository userRepository;
-        private readonly IMapper mapper;
-        private readonly IMemoryCache cache;
-        private readonly ILocationRepository locationRepository;
-        private readonly ILogger<CheckingСancelEventHandler> logger;
-        private readonly ICityService cityService;
-        private static readonly SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
-        private static readonly SemaphoreSlim semForFilter = new SemaphoreSlim(1, 1);
-      
-        public EventService(IEventRepository eventRepository, IMapper mapper, IMemoryCache cache, ICityService cityService, IEventTypeService eventTypeService,
-                            ILocationRepository locationRepository, ILogger<CheckingСancelEventHandler> logger, IUserRepository userRepository)
+        private readonly IEventRepository _eventRepository;
+        private readonly IEventTypeService _eventTypeService;
+        private readonly IUserRepository _userRepository;
+        private readonly IMapper _mapper;
+        private readonly ICacheService _cache; 
+        private readonly ILocationRepository _locationRepository;
+        private readonly ILogger<CheckingСancelEventHandler> _logger;
+        private readonly ICityService _cityService;
+        private static readonly ConcurrentDictionary<int, SemaphoreSlim> _semaphoresById = new();
+        private static readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoresByFilter = new();
+
+        public EventService(
+            IEventRepository eventRepository,
+            IMapper mapper,
+            ICacheService cache,
+            ICityService cityService,
+            IEventTypeService eventTypeService,
+            ILocationRepository locationRepository,
+            ILogger<CheckingСancelEventHandler> logger,
+            IUserRepository userRepository)
         {
-            this.eventRepository = eventRepository;
-            this.mapper = mapper;
-            this.cache = cache;
-            this.locationRepository = locationRepository;
-            this.logger = logger;
-            this.cityService = cityService;
-            this.eventTypeService = eventTypeService;
-            this.userRepository = userRepository;
+            _eventRepository = eventRepository;
+            _mapper = mapper;
+            _cache = cache;
+            _locationRepository = locationRepository;
+            _logger = logger;
+            _cityService = cityService;
+            _eventTypeService = eventTypeService;
+            _userRepository = userRepository;
         }
 
         public async Task<List<EventTypeDTO>?> GetTypesEventsForCity(int idCity)
         {
-        
-                var quaryable = eventRepository.GetAllEventsQueryable();
-            try
-            {
-                var a = await quaryable.Where(ev => ev.Location.CityId == idCity && ev.StatusEventId == (int)StatusEventConts.Published)
-                                       .Where(ev => ev.Location.CityId == idCity && ev.StatusEventId == 1)
-                                       .Select(ev => ev.EventType)
-                                       .Distinct() 
-                                       .ProjectTo<EventTypeDTO>(mapper.ConfigurationProvider)
-                                       .ToListAsync();
-                return a;
-            }
-            catch(Exception ex)
-            {
-                var b = ex.Message;
-            }
-            return null;
-
-            
+            return await _eventRepository.GetAllEventsQueryable()
+                .Where(ev => ev.Location.CityId == idCity && ev.StatusEventId == (int)StatusEventConts.Published)
+                .Select(ev => ev.EventType)
+                .Distinct()
+                .ProjectTo<EventTypeDTO>(_mapper.ConfigurationProvider)
+                .ToListAsync();
         }
-
 
         public async Task<EventIndexViewModel> GetFilterEvents(int? selectedCity, int? selectedTypeEvent)
         {
-            var listCity = await cityService.GetAllAsync();
-            var listTypeEvents = await eventTypeService.GetAllAsync();
-            var filter = new EventFilterDTO
-            {
+            var filter = await GetDataForFilter();
+            filter.SelectedCity = selectedCity;
+            filter.SelectedTypeEvent = selectedTypeEvent;
 
-                Cities = listCity,
-                TypeEvents = listTypeEvents,
-                SelectedCity = selectedCity,
-                SelectedTypeEvent = selectedTypeEvent
-            };
             return new EventIndexViewModel { Filter = filter };
         }
+
         public async Task<EventFilterDTO> GetDataForFilter()
         {
-            var listCity = await cityService.GetAllAsync();
-            var listTypeEvents = await eventTypeService.GetAllAsync();
-            var dataFilter = new EventFilterDTO
+            var listCity = await _cityService.GetAllAsync();
+            var listTypeEvents = await _eventTypeService.GetAllAsync();
+            return new EventFilterDTO
             {
-
                 Cities = listCity,
                 TypeEvents = listTypeEvents,
             };
-            return dataFilter;
         }
-
-
 
         public async Task<List<CommandViewModel>> GetCommandChekingCanckeledEventAsync()
         {
-            IQueryable<Event> quaryable = eventRepository.GetAllEventsQueryable();
-            var listEventDb = quaryable.Include(e=>e.Location).Where(e => e.StatusEventId == (int)StatusEventConts.Published).ToList();
-            //writeEventsInCache(mapper.Map<List<EventSummaryViewModel>>(listEventDb));
+            var listEventDb = await _eventRepository.GetAllEventsQueryable()
+                .Include(e => e.Location)
+                .Where(e => e.StatusEventId == (int)StatusEventConts.Published)
+                .ToListAsync();
+
             return listEventDb.Select(e => new CommandViewModel
             {
                 command = new CheckingСancelEventCommand(e.Id, e.EndTime),
@@ -113,14 +91,13 @@ namespace GoWeb.Service
             }).ToList();
         }
 
-
-
         public async Task<List<CommandViewModel>> GetCommandRecreateEventAsync()
         {
+            var listEventDb = await _eventRepository.GetAllEventsQueryable()
+                .Include(e => e.Location)
+                .Where(e => e.StatusEventId == (int)StatusEventConts.ReСreation)
+                .ToListAsync();
 
-            IQueryable<Event> quaryable = eventRepository.GetAllEventsQueryable();
-            var listEventDb = quaryable.Include(e => e.Location).Where(e => e.StatusEventId == (int)StatusEventConts.ReСreation).ToList();
-           // writeEventsInCache(mapper.Map<List<EventSummaryViewModel>>(listEventDb));
             return listEventDb.Select(e => new CommandViewModel
             {
                 command = new RecreateEventCommand(e.Id),
@@ -128,137 +105,36 @@ namespace GoWeb.Service
             }).ToList();
         }
 
-
-
-
-
-
         public async Task<List<EventSummaryDTO>?> GetFilteredEventsAsync(EventFilterDTO filter)
         {
-            var listEventsView = new List<EventSummaryDTO>();
-            if (filter.SelectedCity != null)
+            if (filter.SelectedCity == null || filter.SelectedCity == 0) return null;
+            string filterKey = new EventFilterCacheKey(filter.SelectedCity, filter.SelectedTypeEvent).ToString();
+            var (isSuccess, listIdEvents) = await _cache.TryGetValueAsync<List<int>>(filterKey);
+            if (isSuccess && listIdEvents != null)
             {
-                if (cache.TryGetValue(filter, out List<int>? listIdEvents))
-                {
-                     return await getEventsCaheAndDB(listIdEvents);
-                }
-                await semForFilter.WaitAsync();
-                try
-                {
-                    if (cache.TryGetValue(filter, out listIdEvents))
-                    {
-                        return await getEventsCaheAndDB(listIdEvents);
-                    }
-
-                    var listIdEventsDB = await FilterEventsView(filter, eventRepository.GetAllEventsQueryable());
-                    if (listIdEventsDB != null)
-                    {
-                        cache.Set(filter, listIdEventsDB, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(60)));
-                        listEventsView = await getEventsCaheAndDB(listIdEventsDB);
-                        return listEventsView;
-                    }
-                    cache.Set(filter, listIdEventsDB, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(1))); // защита от частого перезапроса   
-                }
-                finally
-                {
-                    semForFilter.Release();
-                }
+                return await GetEventsCacheAndDbAsync(listIdEvents);
             }
-            return null;
-        }
-
-
-
-        public async Task<int> AddAsync(Event ev)
-        {
-            var idEvent = await eventRepository.AddAsync(ev); //условие на счёт если сохранение невозможно, например такое событие с данным временем уже существует
-            if (ev.StatusEventId == (int)StatusEventConts.Published)
-            {
-                var eventView = mapper.Map<EventSummaryDTO>(ev);
-                if (ev.Location == null)
-                    eventView.Location = mapper.Map<LocationCreateViewModel>(await locationRepository.GetByIdAsync(ev.LocationId.Value));  
-                var timeLive = ev.EndTime - DateTimeOffset.Now;
-                if (timeLive > TimeSpan.Zero)
-                {
-                    cache.Set(new EventCacheKey(eventView.Id), eventView, new MemoryCacheEntryOptions().SetAbsoluteExpiration(timeLive));
-                }
-                RemoveCaheFilters(eventView);
-            }
-            return idEvent;
-        }
-
-        
-        public async Task<int> AddAsync(EventDTO ev)
-        {
-            var eventDB = mapper.Map<Event>(ev);
-            var idEvent = await eventRepository.AddAsync(eventDB); //условие на счёт если сохранение невозможно, например такое событие с данным временем уже существует
-            await UpdateCache(eventDB);
-            return idEvent;
-        }
-
-
-        public async Task UpdateAsync(EventDTO ev)
-        {
-            var eventDB = mapper.Map<Event>(ev);
-            await eventRepository.Update(eventDB);
-            cache.Remove(new EventCacheKey(eventDB.Id));
-            await UpdateCache(eventDB);
-
-
-        }
-
-        public async Task UpdateCache(Event eventDB)
-        {
-            if (eventDB.StatusEventId == (int)StatusEventConts.Published)
-            {
-                var eventView = mapper.Map<EventSummaryDTO>(eventDB);
-                eventView.Location = mapper.Map<LocationCreateViewModel>(await locationRepository.GetByIdAsync(eventDB.LocationId.Value)); // сделать для локации кеш
-                var timeLive = eventDB.EndTime - DateTimeOffset.Now;
-                if (timeLive > TimeSpan.Zero)
-                {
-                    cache.Set(new EventCacheKey(eventView.Id), eventView, new MemoryCacheEntryOptions().SetAbsoluteExpiration(timeLive));
-                }
-                RemoveCaheFilters(eventView);
-            }
-        }
-
-        public async Task<EventSummaryDTO?> GetPublichEventByIdAsync(int id)
-        {
-            if (cache.TryGetValue(new EventCacheKey(id), out EventSummaryDTO? ev))
-            {
-                return ev;
-            }
+            var semaphore = _semaphoresByFilter.GetOrAdd(filterKey, _ => new SemaphoreSlim(1, 1));
             await semaphore.WaitAsync();
             try
             {
-                if (cache.TryGetValue(new EventCacheKey(id), out ev))
+                (isSuccess, listIdEvents) = await _cache.TryGetValueAsync<List<int>>(filterKey);
+                if (isSuccess && listIdEvents != null)
                 {
+                    return await GetEventsCacheAndDbAsync(listIdEvents);
+                }
 
-                    return ev;
-                }
-                var evDb = await eventRepository.GetAllEventsQueryable()
-                                               .Where(e => id==e.Id && e.StatusEventId == (int)StatusEventConts.Published)
-                                               .ProjectTo<EventSummaryDTO>(mapper.ConfigurationProvider)
-                                               .FirstOrDefaultAsync();
-                if (evDb != null)
-                {
-                    ev = mapper.Map<EventSummaryDTO>(evDb);
-                    var timeLive = ev.EndTime - DateTimeOffset.Now;
-                    if (timeLive > TimeSpan.Zero)
-                    {
-                        cache.Set(new EventCacheKey(ev.Id), ev, new MemoryCacheEntryOptions().SetAbsoluteExpiration(timeLive));
-                    }
-                    else
-                    {
-                        cache.Set(new EventCacheKey(ev.Id), ev, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(10)));
-                    }
-                }
-                else
-                {
-                    cache.Set(new EventCacheKey(id), ev, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(1)));
-                }
-                return ev;
+                var listIdEventsDB = await FilterEventsView(filter, _eventRepository.GetAllEventsQueryable());
 
+                if (listIdEventsDB != null && listIdEventsDB.Any())
+                {
+                    await _cache.SetAsync(filterKey, listIdEventsDB, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(60) });
+                    return await GetEventsCacheAndDbAsync(listIdEventsDB);
+                }
+
+
+                await _cache.SetAsync(filterKey, new List<int>(), new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1) });
+                return new List<EventSummaryDTO>();
             }
             finally
             {
@@ -266,125 +142,230 @@ namespace GoWeb.Service
             }
         }
 
+        public async Task<int> AddAsync(Event ev)
+        {
+            var idEvent = await _eventRepository.AddAsync(ev);
+            if (idEvent > 0 && ev.StatusEventId == (int)StatusEventConts.Published)
+            {
+                var eventView = _mapper.Map<EventSummaryDTO>(ev);
+                if (ev.Location == null && ev.LocationId.HasValue)
+                    eventView.Location = _mapper.Map<LocationCreateViewModel>(await _locationRepository.GetByIdAsync(ev.LocationId.Value));
 
-    
+                var timeLive = ev.EndTime - DateTimeOffset.Now;
+                if (timeLive > TimeSpan.Zero)
+                {
+                    await _cache.SetAsync(new EventSummaryCacheKey(eventView.Id).ToString(), eventView, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = timeLive });
+                }
+                await RemoveCacheFiltersAsync(eventView);
+            }
+            return idEvent;
+        }
+
+        public async Task<int> AddAsync(EventDTO ev)
+        {
+            var eventDB = _mapper.Map<Event>(ev);
+            var idEvent = await _eventRepository.AddAsync(eventDB);
+            if (idEvent > 0)
+            {
+                await UpdateCacheAsync(eventDB);
+            }
+            return idEvent;
+        }
+
+        public async Task UpdateAsync(EventDTO ev)
+        {
+            var eventDB = _mapper.Map<Event>(ev);
+            await _eventRepository.Update(eventDB);
+
+            // Удаляем старый кэш и обновляем его
+            await _cache.RemoveAsync(new EventSummaryCacheKey(eventDB.Id).ToString());
+            await UpdateCacheAsync(eventDB);
+        }
+
+        public async Task UpdateCacheAsync(Event eventDB)
+        {
+            if (eventDB.StatusEventId == (int)StatusEventConts.Published)
+            {
+                var eventView = _mapper.Map<EventSummaryDTO>(eventDB);
+                if (eventDB.LocationId.HasValue)
+                    eventView.Location = _mapper.Map<LocationCreateViewModel>(await _locationRepository.GetByIdAsync(eventDB.LocationId.Value));
+
+                var timeLive = eventDB.EndTime - DateTimeOffset.Now;
+                if (timeLive > TimeSpan.Zero)
+                {
+                    await _cache.SetAsync(new EventSummaryCacheKey(eventView.Id).ToString(), eventView, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = timeLive });
+                }
+                await RemoveCacheFiltersAsync(eventView);
+            }
+        }
+
+        public async Task<EventSummaryDTO?> GetPublichEventByIdAsync(int id)
+        {
+            string cacheKey = new EventSummaryCacheKey(id).ToString();
+
+            var (isSuccess, ev) = await _cache.TryGetValueAsync<EventSummaryDTO>(cacheKey);
+            if (isSuccess) return ev;
+
+            var semaphore = _semaphoresById.GetOrAdd(id, _ => new SemaphoreSlim(1, 1));
+            await semaphore.WaitAsync();
+            try
+            {
+                (isSuccess, ev) = await _cache.TryGetValueAsync<EventSummaryDTO>(cacheKey);
+                if (isSuccess) return ev;
+
+                var evDb = await _eventRepository.GetAllEventsQueryable()
+                    .Where(e => id == e.Id && e.StatusEventId == (int)StatusEventConts.Published)
+                    .ProjectTo<EventSummaryDTO>(_mapper.ConfigurationProvider)
+                    .FirstOrDefaultAsync();
+
+                if (evDb != null)
+                {
+                    var timeLive = evDb.EndTime - DateTimeOffset.Now;
+                    // Если событие уже в прошлом, храним недолго
+                    TimeSpan expireTime = timeLive > TimeSpan.Zero ? timeLive : TimeSpan.FromMinutes(10);
+                    await _cache.SetAsync(cacheKey, evDb, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = expireTime});
+                }
+                else
+                {
+                    // Кэшируем отсутствие, чтобы не долбить БД
+                    await _cache.SetAsync(cacheKey, (EventSummaryDTO?)null, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1) });
+                }
+
+                return evDb;
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        }
 
         public async Task<List<int>> FilterEventsView(EventFilterDTO filter, IQueryable<Event> queryableEvent)
         {
-            if (filter.SelectedCity != null && filter.SelectedCity !=0)
+            if (filter.SelectedCity != null && filter.SelectedCity != 0)
             {
                 queryableEvent = queryableEvent.Where(e => e.Location.CityId == filter.SelectedCity.Value);
             }
 
-            if (filter.SelectedTypeEvent != null && filter.SelectedTypeEvent!=0)
+            if (filter.SelectedTypeEvent != null && filter.SelectedTypeEvent != 0)
             {
                 queryableEvent = queryableEvent.Where(e => e.EventTypeId == filter.SelectedTypeEvent.Value);
             }
 
-            var list = await queryableEvent.Where(e => e.StatusEventId == (int)StatusEventConts.Published).Select(e => e.Id).ToListAsync();
-            return list;
+            return await queryableEvent
+                .Where(e => e.StatusEventId == (int)StatusEventConts.Published)
+                .Select(e => e.Id)
+                .ToListAsync();
         }
 
-        //return await queryableEvent.ProjectTo<EventSummaryViewModel>(mapper.ConfigurationProvider).ToListAsync();
-        public void RemoveCaheFilters(EventSummaryDTO eventSummary)
+        public async Task RemoveCacheFiltersAsync(EventSummaryDTO eventSummary)
         {
+            // Сбрасываем кэш фильтра только по городу
+            string filterCity = new EventFilterCacheKey(eventSummary.Location.CityId, null).ToString();
+            await _cache.RemoveAsync(filterCity);
 
-            var filterCity = new EventFilterDTO() { SelectedCity = eventSummary.Location.CityId };
-            cache.Remove(filterCity);
-            var filterCityTypeEvent = new EventFilterDTO() { SelectedCity = eventSummary.Location.CityId, SelectedTypeEvent = eventSummary.EventTypeId };
-            cache.Remove(filterCityTypeEvent);
+            // Сбрасываем кэш фильтра по городу + типу события
+            string filterCityTypeEvent = new EventFilterCacheKey(eventSummary.Location.CityId, eventSummary.EventTypeId).ToString();
+            await _cache.RemoveAsync(filterCityTypeEvent);
         }
-
-   
-
 
         private async Task<List<EventSummaryDTO>> GetPublishedEventsDbAsync(List<int> idEventsNotInCache)
         {
-            var updateEvenstForCache = await eventRepository.GetAllEventsQueryable()
-                                               .Where(e => idEventsNotInCache.Contains(e.Id) && e.StatusEventId==(int)StatusEventConts.Published)
-                                               .ProjectTo<EventSummaryDTO>(mapper.ConfigurationProvider)
-                                               .ToListAsync();
-            return updateEvenstForCache;
+            if (!idEventsNotInCache.Any()) return new List<EventSummaryDTO>();
+
+            return await _eventRepository.GetAllEventsQueryable()
+                .Where(e => idEventsNotInCache.Contains(e.Id) && e.StatusEventId == (int)StatusEventConts.Published)
+                .ProjectTo<EventSummaryDTO>(_mapper.ConfigurationProvider)
+                .ToListAsync();
         }
 
-        private void writeEventsInCache(List<EventSummaryDTO> listEvents)
+        private async Task WriteEventsInCacheAsync(List<EventSummaryDTO> listEvents)
         {
             foreach (var evView in listEvents)
             {
                 var timeLive = evView.EndTime - DateTimeOffset.Now;
                 if (timeLive > TimeSpan.Zero)
                 {
-                    cache.Set(new EventCacheKey(evView.Id), evView, new MemoryCacheEntryOptions().SetAbsoluteExpiration(timeLive));
-                    logger.LogInformation("Cобытие с id:{id} добавлено в кеш", evView.Id);
+                    await _cache.SetAsync(new EventSummaryCacheKey(evView.Id).ToString(), evView,
+                        new DistributedCacheEntryOptions{ AbsoluteExpirationRelativeToNow = timeLive });
+                    _logger.LogInformation("Cобытие с id:{id} добавлено в кеш", evView.Id);
                 }
             }
         }
-        private async Task<List<EventSummaryDTO>?> getEventsCaheAndDB(List<int>? listIdEventsDB)
+
+        // Переписанный метод для массового получения из кэша (N+1 исправлено)
+        private async Task<List<EventSummaryDTO>> GetEventsCacheAndDbAsync(List<int>? listIdEventsDB)
         {
-            if (listIdEventsDB == null)
-                return null;
-            var listEventsView= new List<EventSummaryDTO>();
+            if (listIdEventsDB == null || !listIdEventsDB.Any()) return new List<EventSummaryDTO>();
+
+            var listEventsView = new List<EventSummaryDTO>();
             var idEventsNotInCache = new List<int>();
-            foreach (var idEv in listIdEventsDB)
+
+            // Собираем список строковых ключей
+            var keys = listIdEventsDB.Select(id => new EventSummaryCacheKey(id).ToString()).ToList();
+
+            // Одним запросом забираем из Redis всё, что есть
+            var dictInCache = await _cache.GetManyAsync<EventSummaryDTO>(keys);
+
+            foreach (var id in listIdEventsDB)
             {
-                if (cache.TryGetValue(new EventCacheKey(idEv), out EventSummaryDTO evView))
+                string key = new EventSummaryCacheKey(id).ToString();
+
+                if (dictInCache.TryGetValue(key, out var evView) && evView != null)
                 {
-                    if (evView != null)
-                        listEventsView.Add(evView);
+                    listEventsView.Add(evView);
                 }
                 else
                 {
-                    idEventsNotInCache.Add(idEv);
+                    idEventsNotInCache.Add(id);
                 }
             }
-            if (idEventsNotInCache.Count > 0) // существует лимит на диапозон 
+
+            // Если кого-то не нашли - идем в базу
+            if (idEventsNotInCache.Count > 0)
             {
                 var eventsNotInCache = await GetPublishedEventsDbAsync(idEventsNotInCache);
                 listEventsView.AddRange(eventsNotInCache);
-                writeEventsInCache(eventsNotInCache);
+                await WriteEventsInCacheAsync(eventsNotInCache);
             }
+
             return listEventsView;
         }
 
-        public async Task<bool> ExistenceEvent(int idEvent)
-        {
-            return await eventRepository.ExistenceEvent(idEvent);
-        }
+        public async Task<bool> ExistenceEvent(int idEvent) => await _eventRepository.ExistenceEvent(idEvent);
 
-        public async Task<bool> UpdateStatusEvent(int idEvent, StatusEventConts status) //доделать метод с кешем что бы был
+        public async Task<bool> UpdateStatusEvent(int idEvent, StatusEventConts status)
         {
-            if(status != StatusEventConts.Published && status != StatusEventConts.ReСreation)
+            if (status != StatusEventConts.Published && status != StatusEventConts.ReСreation)
             {
-                cache.Remove(new EventCacheKey(idEvent));
-                logger.LogInformation("Cобытие с {id} удалено из кеша после обновления статуса на {status}", idEvent, Enum.GetName(status));
+                await _cache.RemoveAsync(new EventSummaryCacheKey(idEvent).ToString());
+                _logger.LogInformation("Cобытие с {id} удалено из кеша после обновления статуса на {status}", idEvent, Enum.GetName(status));
             }
-            return  await  eventRepository.UpdateStatusEvent(idEvent, status);
+            return await _eventRepository.UpdateStatusEvent(idEvent, status);
         }
 
-        public async Task<bool> CheckingCountUserAndStatus(int idEvent)
-        {
-            return await eventRepository.CheckingCountUserAndStatus(idEvent);
-        }
+        public async Task<bool> CheckingCountUserAndStatus(int idEvent) => await _eventRepository.CheckingCountUserAndStatus(idEvent);
 
         public async Task<bool> DeleteBuIdAsync(int idEvent)
         {
-            return await eventRepository.DeleteBuIdAsync(idEvent);
+            await _cache.RemoveAsync(new EventSummaryCacheKey(idEvent).ToString());
+            return await _eventRepository.DeleteBuIdAsync(idEvent);
         }
 
-        public async Task<EventSummaryDTO?> GetEventByIdAsync(int id) // возможно добавить кеширование
+        public async Task<EventSummaryDTO?> GetEventByIdAsync(int id)
         {
-            var evDb = await eventRepository.GetAllEventsQueryable()
-                                               .Where(e => id == e.Id)
-                                               .ProjectTo<EventSummaryDTO>(mapper.ConfigurationProvider)
-                                               .FirstOrDefaultAsync();
-            return evDb;
+            return await _eventRepository.GetAllEventsQueryable()
+                .Where(e => id == e.Id)
+                .ProjectTo<EventSummaryDTO>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync();
         }
     }
 
-    public record EventCacheKey(int idEvent)
+    public record EventSummaryCacheKey(int idEvent)
     {
         public override string ToString() => $"event:summary:{idEvent}";
     }
-
- 
+    public record EventFilterCacheKey(int? cityId, int? typeEventId)
+    {
+        public override string ToString() => $"event:filter:city:{cityId ?? 0}:type:{typeEventId ?? 0}";
+    }
 }

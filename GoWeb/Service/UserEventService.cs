@@ -5,6 +5,7 @@ using GoWeb.Shared.Сonstants;
 using GoWebApplication.Db.Models;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using System.Collections.Concurrent;
 
 namespace GoWeb.Service
 {
@@ -19,7 +20,7 @@ namespace GoWeb.Service
         private readonly IMapper mapper;
 
 
-        private static readonly SemaphoreSlim semofor = new SemaphoreSlim(1, 1);
+        private static readonly ConcurrentDictionary<int, SemaphoreSlim> _semaphoresById = new();
         public UserEventService(IRatingRepository ratingRepository,IUserEvent userEventService, IUserService userService, ICacheService cache, IUserRepository userRepository, IEventService eventService, IEventRepository eventRepository, IMapper mapper) 
         {
             this.eventRepository = eventRepository;
@@ -57,7 +58,7 @@ namespace GoWeb.Service
             if(succesResult.Contains(result))
             {
                 await cache.RemoveAsync(new UsersInEventCacheKey(idEvent).ToString());
-                await cache.RemoveAsync(new EventCacheKey(idEvent).ToString());
+                await cache.RemoveAsync(new EventSummaryCacheKey(idEvent).ToString());
             }
             return result;  
         }
@@ -68,7 +69,7 @@ namespace GoWeb.Service
             if (result==LeaveResult.SuccessLeave)
             {
                 await cache.RemoveAsync(new UsersInEventCacheKey(idEvent).ToString());
-                await cache.RemoveAsync(new EventCacheKey(idEvent).ToString());
+                await cache.RemoveAsync(new EventSummaryCacheKey(idEvent).ToString());
             }
             return result;
         }
@@ -86,7 +87,8 @@ namespace GoWeb.Service
                     return new(); 
                 return await userService.GetPreviewUsers(resultCache.Value);
             }
-            await semofor.WaitAsync();
+            var semaphore = _semaphoresById.GetOrAdd(idEvent, _ => new SemaphoreSlim(1, 1));
+            await semaphore.WaitAsync();
             try
             {
                 resultCache = await cache.TryGetValueAsync<List<string>>(cacheKey);
@@ -112,7 +114,7 @@ namespace GoWeb.Service
             }
             finally
             {
-                semofor.Release();
+                semaphore.Release();
             }
         }
 

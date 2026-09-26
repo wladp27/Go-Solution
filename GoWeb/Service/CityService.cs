@@ -1,21 +1,23 @@
 ﻿using AutoMapper;
 using GoWeb.Interfaces;
 using GoWeb.Models;
+using GoWeb.Shared.Models;
 using GoWeb.Сonstants.Cache;
 using GoWebApplication.Db.Models;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
-using GoWeb.Shared.Models;
+using System.Collections.Concurrent;
 
 namespace GoWeb.Service
 {
     public class CityService : ICityService
     {
         private readonly ICityRepository cityRepository;
-        private readonly IMemoryCache cache;
+        private readonly ICacheService cache;
         private readonly IMapper mapper;
         private static readonly SemaphoreSlim semForGetAll = new SemaphoreSlim(1, 1);
-        private static readonly SemaphoreSlim semForGetId = new SemaphoreSlim(1, 1);
-        public CityService(ICityRepository cityRepository, IMemoryCache cache, IMapper mapper)
+        private static readonly ConcurrentDictionary<int, SemaphoreSlim> _semaphoresById = new();
+        public CityService(ICityRepository cityRepository, ICacheService cache, IMapper mapper)
         {
             this.cityRepository = cityRepository;
             this.cache = cache;
@@ -25,9 +27,9 @@ namespace GoWeb.Service
         public async Task<bool> AddAsync(CityDTO cityView)
         {
             cityView.Id = await cityRepository.AddAsync(mapper.Map<City>(cityView));
-            if (cityView.Id != null)
+            if (cityView.Id > 0)
             {
-                cache.Set(new CityCacheKey(cityView.Id), cityView);
+                await cache.SetAsync(new CityCacheKey(cityView.Id).ToString(), cityView);
                 return true;
             }
             return false;
@@ -40,7 +42,7 @@ namespace GoWeb.Service
             var successDelete = await cityRepository.DeleteAsync((mapper.Map<City>(city)));
             if (successDelete)
             {
-                cache.Remove(new CityCacheKey(city.Id));
+                await cache.RemoveAsync(new CityCacheKey(city.Id).ToString());
                 return true;
             }
             return false;
@@ -49,20 +51,22 @@ namespace GoWeb.Service
         public async Task<List<CityDTO>?> GetAllAsync()
         {
             var allCityView = new List<CityDTO>();
-            if (cache.TryGetValue(CacheConst.allCities, out allCityView))
+            var (isSuccess, cachedCities) = await cache.TryGetValueAsync<List<CityDTO>>(CacheConst.allCities);
+            if (isSuccess)
             {
-                return allCityView;
+                return cachedCities;
             }
             await semForGetAll.WaitAsync();
             try
             {
-                if (cache.TryGetValue(CacheConst.allCities, out List<CityDTO>? allCityV))
+                (isSuccess, cachedCities) = await cache.TryGetValueAsync<List<CityDTO>>(CacheConst.allCities);
+                if (isSuccess)
                 {
-                    return allCityV;
+                    return cachedCities;
                 }
                 var allCityDB = await cityRepository.GetAllAsync();
                 allCityView = mapper.Map<List<CityDTO>>(allCityDB);
-                cache.Set(CacheConst.allCities, allCityView, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromDays(1)));
+                await cache.SetAsync(CacheConst.allCities, allCityView, new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromDays(1)));
             }
             finally
             {
@@ -73,14 +77,17 @@ namespace GoWeb.Service
 
         public async Task<CityDTO?> GetByIdAsync(int id)
         {
-            if (cache.TryGetValue(new CityCacheKey(id), out CityDTO? cityView))
+            var (isSuccess, cityView) = await cache.TryGetValueAsync<CityDTO>(new CityCacheKey(id).ToString());
+            if (isSuccess)
             {
                 return cityView;
             }
-            await semForGetId.WaitAsync();
+            var semaphore = _semaphoresById.GetOrAdd(id, _ => new SemaphoreSlim(1, 1));
+            await semaphore.WaitAsync();
             try
             {
-                if (cache.TryGetValue(new CityCacheKey(id), out cityView))
+                (isSuccess, cityView) = await cache.TryGetValueAsync<CityDTO>(new CityCacheKey(id).ToString());
+                if (isSuccess)
                 {
                     return cityView;
                 }
@@ -88,17 +95,17 @@ namespace GoWeb.Service
                 cityView = mapper.Map<CityDTO>(cityDB);
                 if (cityView != null)
                 {
-                    cache.Set(new CityCacheKey(id), cityView);
+                    await cache.SetAsync(new CityCacheKey(id).ToString(), cityView);
                 }
                 else
                 {
-                    cache.Set(new CityCacheKey(id), cityView, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(1)));
+                    await cache.SetAsync(new CityCacheKey(id).ToString(), cityView, new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(1)));
                 }
 
             }
             finally
             {
-                semForGetId.Release();
+                semaphore.Release();
             }
             return cityView;
         }
@@ -109,12 +116,15 @@ namespace GoWeb.Service
             var successUpdate = await cityRepository.Update(updateCityDb);
             if (successUpdate)
             {
-                cache.Set(new CityCacheKey(city.Id), city);
+                await cache.SetAsync(new CityCacheKey(city.Id).ToString(), city);
                 return true;
             }
             return false;
 
         }
-        public record CityCacheKey(int id);
+        public record CityCacheKey(int id)
+        {
+            public override string ToString() => $"city:summary:{id}";
+        }
     }
 }

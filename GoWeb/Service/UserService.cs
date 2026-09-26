@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Collections.Concurrent;
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using GoWeb.Interfaces;
 using GoWeb.Shared.Models;
@@ -7,109 +8,125 @@ using GoWebApplication.Db.Data;
 using GoWebApplication.Db.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace GoWeb.Service
 {
-    public class UserService: IUserService
+    public class UserService : IUserService
     {
-        private readonly ICacheService cache;
-        private readonly ApplicationDbContext context;
-        private readonly IMapper mapper;
-        private readonly IUserRepository userRepository;
-        public UserService(ICacheService cache, IMapper mapper, IUserRepository userRepository, ApplicationDbContext context) 
+        private readonly ICacheService _cache;
+        private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
+        private readonly IUserRepository _userRepository;
+
+        private static readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoresById = new();
+
+        public UserService(ICacheService cache, IMapper mapper, IUserRepository userRepository, ApplicationDbContext context)
         {
-            this.cache = cache;
-            this.mapper = mapper;
-            this.userRepository = userRepository;
-            this.context = context;
+            _cache = cache;
+            _mapper = mapper;
+            _userRepository = userRepository;
+            _context = context;
         }
 
-        public async Task<List<string>> GetIdUsersDB(int idEvent) // без контекста сделать
+        //  Перенести работу с _context в userRepository
+        public async Task<List<string>> GetIdUsersDB(int idEvent)
         {
-          
-            return await context.UsersEvents.Where(ue => ue.EventId == idEvent &&
-                                                 (ue.StatusJoiningId == (int)JoiningStatus.Registered || ue.StatusJoiningId == (int)JoiningStatus.InReserve))
-                                            .OrderBy(ue => ue.StatusJoiningId)
-                                               .ThenBy(ue => ue.TimeJoinEvent)
-                                            .Select(ue=>ue.User.Id)
-                                            .ToListAsync();
+            return await _context.UsersEvents
+                .Where(ue => ue.EventId == idEvent &&
+                            (ue.StatusJoiningId == (int)JoiningStatus.Registered || ue.StatusJoiningId == (int)JoiningStatus.InReserve))
+                .OrderBy(ue => ue.StatusJoiningId)
+                .ThenBy(ue => ue.TimeJoinEvent)
+                .Select(ue => ue.User.Id)
+                .ToListAsync();
         }
-
 
         public async Task<List<UserPrewievDTO>> GetPreviewUsers(List<string> idUsers)
         {
             var listUserPreview = new List<UserPrewievDTO>();
             var idUserNotInCache = new List<string>();
-            var listKey = idUsers.Select(id => new UsersPreviewCacheKey(id).ToString());
-            var dictionarUserInCache = await cache.GetManyAsync<UserPrewievDTO>(listKey);
+            var listKey = idUsers.Select(id => new UsersPreviewCacheKey(id).ToString()).ToList();
+
+            var dictionarUserInCache = await _cache.GetManyAsync<UserPrewievDTO>(listKey);
+
             foreach (var id in idUsers)
             {
                 var keyUser = new UsersPreviewCacheKey(id).ToString();
-                if (dictionarUserInCache.TryGetValue(keyUser, out UserPrewievDTO? userPreviewView))
+                if (dictionarUserInCache.TryGetValue(keyUser, out var userPreviewView))
                 {
                     listUserPreview.Add(userPreviewView);
                 }
                 else
                 {
                     idUserNotInCache.Add(id);
-                }          
+                }
             }
-            if (idUserNotInCache.Count > 0) // ограничение существует
+
+            if (idUserNotInCache.Count > 0)
             {
                 var userNotInCache = await GetPreviewUsersDB(idUserNotInCache);
                 listUserPreview.AddRange(userNotInCache);
                 await WriteUsersInCache(userNotInCache);
             }
+
             return listUserPreview;
         }
 
         public async Task<List<UserPrewievDTO>> GetPreviewUsersDB(List<string>? idUsers)
         {
-            var usersPreview = await userRepository.GetAllUsersQueryable()
-                                              .Where(e => idUsers.Contains(e.Id))
-                                              .ProjectTo<UserPrewievDTO>(mapper.ConfigurationProvider)
-                                              .ToListAsync();
-            return usersPreview;
+            if (idUsers == null || !idUsers.Any()) return new List<UserPrewievDTO>();
+
+            return await _userRepository.GetAllUsersQueryable()
+                .Where(e => idUsers.Contains(e.Id))
+                .ProjectTo<UserPrewievDTO>(_mapper.ConfigurationProvider)
+                .ToListAsync();
         }
 
-
-        public async Task<UserPrewievDTO> GetPreviewUserDB(string idUsers)
+        public async Task<UserPrewievDTO?> GetPreviewUserDB(string idUsers)
         {
-            var usersPreview = await userRepository.GetAllUsersQueryable()
-                                .ProjectTo<UserPrewievDTO>(mapper.ConfigurationProvider)
-                                .FirstOrDefaultAsync(e => e.Id == idUsers);
-            return usersPreview;
+            return await _userRepository.GetAllUsersQueryable()
+                .ProjectTo<UserPrewievDTO>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync(e => e.Id == idUsers);
         }
-
-
 
         public async Task WriteUsersInCache(List<UserPrewievDTO> usersPreview)
         {
             foreach (var userPrev in usersPreview)
             {
-                await cache.SetAsync(new UsersPreviewCacheKey(userPrev.Id).ToString(), userPrev, 
-                               new DistributedCacheEntryOptions(){ AbsoluteExpirationRelativeToNow =  TimeSpan.FromHours(24)});
-            }  
+                string cacheKey = new UsersPreviewCacheKey(userPrev.Id).ToString();
+                await _cache.SetAsync(cacheKey, userPrev,
+                    new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24) });
+            }
         }
 
-
-        public  async Task<UserPrewievDTO> GetPreviewUser(string idUser)
+        public async Task<UserPrewievDTO?> GetPreviewUser(string idUser)
         {
-            var userPreviewView = await cache.GetAsync<UserPrewievDTO>(new UsersPreviewCacheKey(idUser).ToString());
-            if (userPreviewView != null)
+            string cacheKey = new UsersPreviewCacheKey(idUser).ToString();
+            var (isSuccess, userPreviewView) = await _cache.TryGetValueAsync<UserPrewievDTO>(cacheKey);
+            if (isSuccess) return userPreviewView;
+
+            var semaphore = _semaphoresById.GetOrAdd(idUser, _ => new SemaphoreSlim(1, 1));
+
+            await semaphore.WaitAsync();
+            try
             {
-                return userPreviewView;
+                (isSuccess, userPreviewView) = await _cache.TryGetValueAsync<UserPrewievDTO>(cacheKey);
+                if (isSuccess) return userPreviewView;
+
+                userPreviewView = await GetPreviewUserDB(idUser);
+
+                if (userPreviewView != null)
+                {
+                    await _cache.SetAsync(cacheKey, userPreviewView,
+                        new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24) });
+                }
+            }
+            finally
+            {
+                semaphore.Release();
             }
 
-            var userPrevDb = await GetPreviewUserDB(idUser);
-            if (userPrevDb != null)
-            {
-                await cache.SetAsync(new UsersPreviewCacheKey(userPrevDb.Id).ToString(), userPrevDb, new DistributedCacheEntryOptions(){ AbsoluteExpirationRelativeToNow =  TimeSpan.FromHours(24)});
-            }
-            return userPrevDb;
+            return userPreviewView;
         }
-
 
         public record UsersPreviewCacheKey(string userId)
         {
