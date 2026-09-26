@@ -12,5 +12,7 @@ namespace GoWeb.Interfaces
         Task RemoveAsync(string key, CancellationToken cancellationToken = default);
 
         Task<Dictionary<string, T>> GetManyAsync<T>(IEnumerable<string> keys);
+
+        Task<(bool IsSuccess, T? Value)> TryGetValueAsync<T>(string key, CancellationToken cancellationToken = default);
     }
 }

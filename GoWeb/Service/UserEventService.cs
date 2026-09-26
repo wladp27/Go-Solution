@@ -3,6 +3,7 @@ using GoWeb.Interfaces;
 using GoWeb.Shared.Models;
 using GoWeb.Shared.Сonstants;
 using GoWebApplication.Db.Models;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace GoWeb.Service
@@ -11,7 +12,7 @@ namespace GoWeb.Service
     {
         private readonly IUserEvent userEventRepository;
         private readonly IUserService userService;
-        private readonly IMemoryCache cache;
+        private readonly ICacheService cache;
         private readonly IEventService eventService;
         private readonly IEventRepository eventRepository;
         private readonly IRatingRepository ratingRepository;
@@ -19,12 +20,11 @@ namespace GoWeb.Service
 
 
         private static readonly SemaphoreSlim semofor = new SemaphoreSlim(1, 1);
-        public UserEventService(IRatingRepository ratingRepository,IUserEvent userEventService, IUserService userService, IMemoryCache cache, IUserRepository userRepository, IEventService eventService, IEventRepository eventRepository, IMapper mapper) 
+        public UserEventService(IRatingRepository ratingRepository,IUserEvent userEventService, IUserService userService, ICacheService cache, IUserRepository userRepository, IEventService eventService, IEventRepository eventRepository, IMapper mapper) 
         {
             this.eventRepository = eventRepository;
             this.mapper = mapper;
             this.eventService = eventService;
-            this.userEventRepository = userEventRepository;
             this.userEventRepository= userEventService;
             this.userService= userService;
             this.cache= cache;
@@ -56,8 +56,8 @@ namespace GoWeb.Service
             var succesResult = new JoinResult[] { JoinResult.SuccessNewRegistration, JoinResult.SuccessInReserve, JoinResult.SuccessStatusUpdated };
             if(succesResult.Contains(result))
             {
-                cache.Remove(new UsersInEventCacheKey(idEvent));
-                cache.Remove(new EventCacheKey(idEvent));
+                await cache.RemoveAsync(new UsersInEventCacheKey(idEvent).ToString());
+                await cache.RemoveAsync(new EventCacheKey(idEvent).ToString());
             }
             return result;  
         }
@@ -67,8 +67,8 @@ namespace GoWeb.Service
             var result = await userEventRepository.LeaveUserAsync(idUser, idEvent);
             if (result==LeaveResult.SuccessLeave)
             {
-                cache.Remove(new UsersInEventCacheKey(idEvent));
-                cache.Remove(new EventCacheKey(idEvent));
+                await cache.RemoveAsync(new UsersInEventCacheKey(idEvent).ToString());
+                await cache.RemoveAsync(new EventCacheKey(idEvent).ToString());
             }
             return result;
         }
@@ -76,36 +76,36 @@ namespace GoWeb.Service
 
         public async Task<List<UserPrewievDTO>?> GetUsersEventAsync(int idEvent)
         {
-            var cacheKey = new UsersInEventCacheKey(idEvent);
-            if (cache.TryGetValue(cacheKey, out List<string>? idUsers))
+            var cacheKey = new UsersInEventCacheKey(idEvent).ToString();
+            var resultCache = await cache.TryGetValueAsync<List<string>>(cacheKey);
+            if (resultCache.IsSuccess)
             {
-                if (idUsers == null)
+                if (resultCache.Value == null)
                     return null;
-                if (idUsers.Count == 0)
+                if (resultCache.Value.Count == 0)
                     return new(); 
-                return await userService.GetPreviewUsers(idUsers);
+                return await userService.GetPreviewUsers(resultCache.Value);
             }
-
             await semofor.WaitAsync();
             try
             {
-                if (cache.TryGetValue(cacheKey, out idUsers))
+                resultCache = await cache.TryGetValueAsync<List<string>>(cacheKey);
+                if (resultCache.IsSuccess)
                 {
-                    if (idUsers == null)
+                    if (resultCache.Value == null)
                         return null;
 
-                    if (idUsers.Count == 0)
+                    if (resultCache.Value.Count == 0)
                         return new();
-
-                    return await userService.GetPreviewUsers(idUsers);
+                    return await userService.GetPreviewUsers(resultCache.Value);
                 }
                 var listIdUsersInEvent = await userService.GetIdUsersDB(idEvent);
                 if (listIdUsersInEvent == null)
                 {
-                    cache.Set(cacheKey, listIdUsersInEvent , TimeSpan.FromMinutes(5));
+                    await cache.SetAsync(cacheKey, listIdUsersInEvent , new DistributedCacheEntryOptions() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
                     return null;
                 }
-                cache.Set(cacheKey, listIdUsersInEvent, TimeSpan.FromMinutes(60));
+                await cache.SetAsync(cacheKey, listIdUsersInEvent, new DistributedCacheEntryOptions() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(60) });
                 if (listIdUsersInEvent.Count == 0)
                     return new();
                 return await userService.GetPreviewUsers(listIdUsersInEvent!);
@@ -132,6 +132,9 @@ namespace GoWeb.Service
         }
 
 
-        public record UsersInEventCacheKey(int idEvent);
+        public record UsersInEventCacheKey(int idEvent)
+        {
+            public override string ToString() => $"users:InEvent:{idEvent}";
+        }
     }
 }

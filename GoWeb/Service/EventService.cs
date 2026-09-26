@@ -381,7 +381,10 @@ namespace GoWeb.Service
         }
     }
 
-    public record EventCacheKey(int idEvent);
+    public record EventCacheKey(int idEvent)
+    {
+        public override string ToString() => $"event:summary:{idEvent}";
+    }
 
  
 }

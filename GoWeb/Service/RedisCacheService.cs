@@ -1,5 +1,6 @@
 ﻿using GoWeb.Interfaces;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Primitives;
 using StackExchange.Redis;
 using System.Text.Json;
 
@@ -64,6 +65,16 @@ namespace GoWeb.Service
             return result;
         }
 
+        public async Task<(bool IsSuccess, T? Value)> TryGetValueAsync<T>(string key, CancellationToken cancellationToken = default)
+        {
+            var stringValue = await _cache.GetStringAsync(key, cancellationToken);
+            if (stringValue != null)
+            {
+                var value = JsonSerializer.Deserialize<T>(stringValue);
+                return (true, value);
+            }
+            return (false, default);
+        }
     }
 }
 
