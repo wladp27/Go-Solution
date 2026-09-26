@@ -7,13 +7,13 @@ namespace GoWeb.Service
 {
     public class StatusEventService : IStatusEventService
     {
-        private readonly IMemoryCache cache;
+        private readonly ICacheService cache;
         private readonly IStatusEvent statusEventRepository;
 
         private static readonly SemaphoreSlim semForGetAll = new SemaphoreSlim(1, 1);
         private static readonly SemaphoreSlim semForGetId = new SemaphoreSlim(1, 1);
 
-        public StatusEventService(IMemoryCache cache, IStatusEvent statusEvent) 
+        public StatusEventService(ICacheService cache, IStatusEvent statusEvent) 
         {
             this.cache = cache;
             this.statusEventRepository = statusEvent;
@@ -21,20 +21,23 @@ namespace GoWeb.Service
 
         public async Task<List<StatusEvent>> GetAllAsync()
         {
-            var statusesEvent = new List<StatusEvent>();
-            if (cache.TryGetValue(CacheConst.allStatusesEvent,out statusesEvent))
+            var resultCache = await cache.TryGetValueAsync<List<StatusEvent>>(CacheConst.allStatusesEvent);
+            var statusesEvent = resultCache.Value;
+            if (resultCache.IsSuccess)
             {
-                return statusesEvent;
+                return statusesEvent ?? new();
             }
             await semForGetAll.WaitAsync();
             try
             {
-                if (cache.TryGetValue(CacheConst.allStatusesEvent, out statusesEvent))
+                resultCache = await cache.TryGetValueAsync<List<StatusEvent>>(CacheConst.allStatusesEvent);
+                statusesEvent = resultCache.Value;
+                if (resultCache.IsSuccess)
                 {
-                    return statusesEvent;
+                    return statusesEvent ?? new();
                 }
                 statusesEvent = await statusEventRepository.GetAllAsync();
-                cache.Set(CacheConst.allStatusesEvent, statusesEvent);
+                await cache.SetAsync(CacheConst.allStatusesEvent, statusesEvent);
             }
             finally
             {
@@ -43,21 +46,25 @@ namespace GoWeb.Service
             return statusesEvent;
         }
 
-        public async Task<StatusEvent> GetByIdAsync(int id)
+        public async Task<StatusEvent?> GetByIdAsync(int id)
         {
-            if (cache.TryGetValue(new StatusEventCacheKey(id), out StatusEvent statusEvent))
+            var resultCache = await cache.TryGetValueAsync<StatusEvent>(new StatusEventCacheKey(id).ToString());
+            var statusEvent = resultCache.Value;
+            if (resultCache.IsSuccess)
             {
                 return statusEvent;
             }
             await semForGetId.WaitAsync();
             try
             {
-                if (cache.TryGetValue(new StatusEventCacheKey(id), out  statusEvent))
+                resultCache = await cache.TryGetValueAsync<StatusEvent>(new StatusEventCacheKey(id).ToString());
+                statusEvent = resultCache.Value;
+                if (resultCache.IsSuccess)
                 {
                     return statusEvent;
                 }
                 statusEvent = await statusEventRepository.GetByIdAsync(id);
-                cache.Set(new StatusEventCacheKey(id), statusEvent);
+                await cache.SetAsync(new StatusEventCacheKey(id).ToString(), statusEvent);
             }
             finally
             {
@@ -69,5 +76,8 @@ namespace GoWeb.Service
        
     }
 
-    public record StatusEventCacheKey(int id);
+    public record StatusEventCacheKey(int id)
+    {
+        public override string ToString() => $"event:status:{id}";
+    }
 }
