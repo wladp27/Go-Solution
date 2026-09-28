@@ -1,4 +1,5 @@
-﻿using GoWeb.Interfaces;
+﻿using GoWeb.Exceptions;
+using GoWeb.Interfaces;
 using GoWeb.Mapping;
 using GoWeb.Repositories;
 using GoWeb.Service;
@@ -78,6 +79,11 @@ builder.Services.AddControllersWithViews();
 
 //для api
 builder.Services.AddControllers();
+
+builder.Services.AddExceptionHandler<DatabaseExceptionHandler>();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 // НАСТРОЙКА АВТОРИЗАЦИИ (КУКИ + JWT)
 
 builder.Services.AddAuthentication(options =>
@@ -138,7 +144,7 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     var supportedCultures = new[]
     {
         new CultureInfo(defaultCulture),
-        new CultureInfo("en-US") // Можете добавить другие, если нужно поддерживать английский ввод (с точкой)
+        new CultureInfo("en-US") 
     };
 
     options.DefaultRequestCulture = new RequestCulture(defaultCulture);
