@@ -1,4 +1,6 @@
-﻿using GoWeb.Shared.Requests;
+﻿using GoWeb.Shared.Model;
+using GoWeb.Shared.Requests;
+using GoWeb.Shared.Service;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -7,40 +9,17 @@ using System.Text;
 
 namespace GoWeb.Shared.Features.Manage.Handlers
 {
-    public class GetAllTypesEventsHandler : IRequestHandler<GetAllTypesEventsRequest, GetAllTypesEventsRequest.Response>
+    public class GetAllTypesEventsHandler : IRequestHandler<GetAllTypesEventsRequest,OperationResult<GetAllTypesEventsRequest.Response>>
     {
         private IHttpClientFactory httpClientFactory;
         public GetAllTypesEventsHandler(IHttpClientFactory httpClientFactory) 
         { 
             this.httpClientFactory = httpClientFactory;
         }
-        public async Task<GetAllTypesEventsRequest.Response> Handle(GetAllTypesEventsRequest request, CancellationToken cancellationToken)
+        public async Task<OperationResult<GetAllTypesEventsRequest.Response>> Handle(GetAllTypesEventsRequest request, CancellationToken cancellationToken)
         {
             var client = httpClientFactory.CreateClient("TokenAPIClient");
-            try
-            {
-                var httpResponse = await client.GetAsync(GetAllTypesEventsRequest.RouteTemplate, cancellationToken);
-                var content = await httpResponse.Content.ReadFromJsonAsync<GetAllTypesEventsRequest.Response>(cancellationToken);
-                if (httpResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    return content ?? new GetAllTypesEventsRequest.Response(false, "Event not found", new());
-                }
-                if (!httpResponse.IsSuccessStatusCode)
-                {
-                    return new GetAllTypesEventsRequest.Response(false, "Ошибка сервера", new());
-                }
-                return content ?? new GetAllTypesEventsRequest.Response(true, null, new());
-            }
-            catch (HttpRequestException)
-            {
-                return new GetAllTypesEventsRequest.Response(false, "Ошибка соединения с сервером", new());
-            }
-            catch (Exception)
-            {
-
-                return new GetAllTypesEventsRequest.Response(false, "Произошла непредвиденная ошибка", new());
-            }
-
+            return await client.SafeGetAsJsonAsync<GetAllTypesEventsRequest.Response>(GetAllTypesEventsRequest.RouteTemplate, cancellationToken);
         }
     }
 }

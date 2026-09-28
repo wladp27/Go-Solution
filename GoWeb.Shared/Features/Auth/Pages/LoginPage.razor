@@ -43,9 +43,9 @@
         try
         {
             var response = await mediator.Send(new LoginRequest(userLogin));
-            if (response != null &&  response.token != null)
+            if (response.IsSuccess &&  response.Data.Token != null)
             {
-                await tokenService.SetTokenAsync(response.token.Value); 
+                await tokenService.SetTokenAsync(response.Data.Token.Value);
                 AuthenticationStateProvider.NotifyUserAuthentication();
                 await toastService.Information("Успешный вход");
                 navigationManager.NavigateTo(Routes.MyEvents);

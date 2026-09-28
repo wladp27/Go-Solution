@@ -41,7 +41,7 @@
         <div class="col">
             <label class="form-label">Широта</label>
             <InputNumber class="form-control" @bind-Value="model.LocationLatitude" />
-            <ValidationMessage For="@(() => model.LocationLatitude)" class="text-danger" />
+            <ValidationMessage For="@(() => model.LocationLatitude)" class="text-danger" /> 
         </div>
         <div class="col">
             <label class="form-label">Долгота</label>
@@ -84,10 +84,10 @@
     {
         var response = await mediator.Send(new CreateLocationRequest(model));
 
-        if (response.IsSuccess && response.Data!=0)
+        if (response.IsSuccess && response.Data.idLocation != 0)
         {
             await toastService.Success("Успех", "Локация успешно создана");
-            model.Id = response.Data;
+            model.Id = response.Data.idLocation;
             await OnCreate.InvokeAsync(model);
             model = new LocationCreateDTO();
             

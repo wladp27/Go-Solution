@@ -33,16 +33,16 @@
     {
         if(CurrentValue!=0)
         {
-            var response = await mediator.Send(new GetAllTypesEventsRequest());
+            var response = await mediator.Send(new GetAllTypesEventsRequest()); 
             if (response.IsSuccess)
             {
-                eventTypes = response.Types ?? new();
+                eventTypes = response.Data.Types ?? new();
                 selectedType = eventTypes.FirstOrDefault(t => t.Id == CurrentValue);
                 selectedNameType = selectedType?.Name;
             }
             else
             {
-                await toastService.Error("Ошибка", response.Message ?? "Не удалось загрузить типы событий");
+                await toastService.Error("Ошибка", response.ErrorMessage ?? "Не удалось загрузить типы событий");
             }
 
         }
@@ -65,12 +65,12 @@
             var response = await mediator.Send(new GetAllTypesEventsRequest());
             if (response.IsSuccess)
             {
-                eventTypes = response.Types ?? new();
+                eventTypes = response.Data.Types ?? new();
                 return eventTypes;
             }
             else
             {
-                await toastService.Error("Ошибка", response.Message ?? "Не удалось загрузить типы событий");
+                await toastService.Error("Ошибка", response.ErrorMessage ?? "Не удалось загрузить типы событий");
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using GoWeb.Shared.Model;
+﻿using GoWeb.Shared.Interfaces;
+using GoWeb.Shared.Model;
 using GoWeb.Shared.Models;
 using MediatR;
 using System;
@@ -8,21 +9,14 @@ using System.Text.Json.Serialization;
 
 namespace GoWeb.Shared.Requests
 {
-    public record CreateLocationRequest(LocationCreateDTO Location) : IRequest<CreateLocationRequest.Response>
+    public record CreateLocationRequest(LocationCreateDTO Location) : IRequestPost<LocationCreateDTO, CreateLocationRequest.Response>
     {
-        public const string RouteTemplate = "/api/location/create";
+        public const string Route = "/api/location/create";
 
-        public class Response : OperationResult<int>
-        {
-            
-            public Response(bool isSuccess, int data, string errorMessage)
-                : base(isSuccess, data, errorMessage) { }
+        public string RouteTemplate => Route;
 
-            public new static Response Success(int value) =>
-                new(true, value, string.Empty);
+        public LocationCreateDTO Model { get; set; } = Location;
 
-            public new static Response Failure(string errorMessage) =>
-                new(false, default!, errorMessage);
-        }
+        public record Response(int idLocation);
     }
 }

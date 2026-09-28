@@ -130,10 +130,10 @@ else
         if (!disabled && !string.IsNullOrEmpty(locationName) && selectedIdCity!=0)
         {
 
-            var response = await mediator.Send(new GetFilteredLocationsRequest(locationName, selectedIdCity));
+            var response = await mediator.Send(new GetFilteredLocationsRequest(locationName, selectedIdCity)); 
             if(response.IsSuccess)
             {
-                var filteredLocation = response.Data ?? new();
+                var filteredLocation = response.Data.LocationPreviews ?? new();
                 return filteredLocation;
             }
             else

@@ -27,7 +27,7 @@ namespace GoWeb.API.Controllers
         }
 
         [HttpPost]
-        [Route(GetPublishedEventsRequest.RouteTemplate)]
+        [Route(GetPublishedEventsRequest.Route)]
         public async Task<ActionResult<GetPublishedEventsRequest.Response>> GetPublishedEvents([FromBody] EventFilterDTO filter)
         {
             var listEvent = await eventService.GetFilteredEventsAsync(filter);
@@ -43,9 +43,12 @@ namespace GoWeb.API.Controllers
             var ev = await eventService.GetEventByIdAsync(id);
             if (ev != null)
             {
-                return GetEventRequest.Response.Success(ev);
+                return Ok(new GetEventRequest.Response(ev));
             }
-            return NotFound(GetEventRequest.Response.Failure("Событие не найдено."));
+            return Problem(
+                            detail: "Событие с указанным ID не найдено",
+                            statusCode: StatusCodes.Status404NotFound,
+                            title: "Not Found");
         }
 
         [HttpGet(GetUsersFromEventRequest.RouteTemplate)]
@@ -66,9 +69,10 @@ namespace GoWeb.API.Controllers
         {
             var eventWitchUsers= await userEventService.GetEventsWithUserAsync(id);
             if (eventWitchUsers != null)
-                return Ok(new GetEventWithUsersRequest.Response(true,null,eventWitchUsers));
-            return NotFound(new GetEventWithUsersRequest.Response(false, null, new()));
-
+                return Ok(new GetEventWithUsersRequest.Response(eventWitchUsers));
+            return Problem(detail: "Не удалось загрузить пользователей события с ID {id} ",
+                            statusCode: StatusCodes.Status404NotFound,
+                            title: "Not Found");
         }
 
 
@@ -78,7 +82,10 @@ namespace GoWeb.API.Controllers
             var dataFilter = await eventService.GetDataForFilter();
             if (dataFilter != null)
                 return new GetDataForFilterEventRequest.Response(dataFilter);
-            return NotFound();
+            return Problem(
+                            detail: "Получить данные для фильтра не удалось",
+                            statusCode: StatusCodes.Status404NotFound,
+                            title: "Not Found");
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]

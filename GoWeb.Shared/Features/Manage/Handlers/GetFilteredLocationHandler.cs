@@ -1,4 +1,6 @@
-﻿using GoWeb.Shared.Requests;
+﻿using GoWeb.Shared.Model;
+using GoWeb.Shared.Requests;
+using GoWeb.Shared.Service;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -7,7 +9,7 @@ using System.Text;
 
 namespace GoWeb.Shared.Features.Manage.Handlers
 {
-    public class GetFilteredLocationHandler : IRequestHandler<GetFilteredLocationsRequest, GetFilteredLocationsRequest.Response>
+    public class GetFilteredLocationHandler : IRequestHandler<GetFilteredLocationsRequest,OperationResult<GetFilteredLocationsRequest.Response>>
     {
 
         private IHttpClientFactory httpClientFactory;
@@ -16,31 +18,13 @@ namespace GoWeb.Shared.Features.Manage.Handlers
             this.httpClientFactory = httpClientFactory;
         }
 
-        public async Task<GetFilteredLocationsRequest.Response> Handle(GetFilteredLocationsRequest request, CancellationToken cancellationToken)
+        public async Task<OperationResult<GetFilteredLocationsRequest.Response>> Handle(GetFilteredLocationsRequest request, CancellationToken cancellationToken)
         {
             var client = httpClientFactory.CreateClient("TokenAPIClient");
-            try
-            {
-                var httpResponse = await client.GetAsync(GetFilteredLocationsRequest.RouteTemplate
+            return await client.SafeGetAsJsonAsync<GetFilteredLocationsRequest.Response>(GetFilteredLocationsRequest.RouteTemplate
                                                                     .Replace("{idCity}", request.IdCity.ToString())
                                                                     .Replace("{address}", Uri.EscapeDataString(request.Address)), cancellationToken);
-                if (!httpResponse.IsSuccessStatusCode)
-                {
-                    var errorContent = await httpResponse.Content.ReadFromJsonAsync<GetFilteredLocationsRequest.Response>(cancellationToken);
-                    return errorContent ?? GetFilteredLocationsRequest.Response.Failure($"Ошибка сервера: {httpResponse.StatusCode}");
-                }
-                var content = await httpResponse.Content.ReadFromJsonAsync<GetFilteredLocationsRequest.Response>(cancellationToken);
-                return content ?? GetFilteredLocationsRequest.Response.Failure("Получен пустой ответ от сервера");
-            }
-            catch (HttpRequestException)
-            {
-                return GetFilteredLocationsRequest.Response.Failure("Ошибка соединения с сервером");
-            }
-            catch (Exception)
-            {
-
-                return GetFilteredLocationsRequest.Response.Failure("Произошла непредвиденная ошибка");
-            }
+       
 
         }
     }

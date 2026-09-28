@@ -19,7 +19,7 @@ namespace GoWeb.API.Controllers
             this.mapper = mapper;
         }
         
-        [HttpPost(CreateLocationRequest.RouteTemplate)]
+        [HttpPost(CreateLocationRequest.Route)]
          public async Task<ActionResult<CreateLocationRequest.Response>> Create([FromBody] LocationCreateDTO location)
          {
             var locationDb = mapper.Map<LocationCreateDTO, Location>(location);
@@ -27,9 +27,9 @@ namespace GoWeb.API.Controllers
             var result = await locationRepository.AddAsync(locationDb);
             if(result.IsSuccess)
             {
-                return Ok(CreateLocationRequest.Response.Success(result.Data));
+                return Ok(new CreateLocationRequest.Response(result.Data));
             }
-            return BadRequest(CreateLocationRequest.Response.Failure(result.ErrorMessage!));
+            return Problem(detail: result.ErrorMessage, statusCode: 400);
          }
         
         [HttpGet(GetFilteredLocationsRequest.RouteTemplate)]
@@ -38,9 +38,13 @@ namespace GoWeb.API.Controllers
             var result = await locationRepository.GetPreviewLocations(address, idCity);
             if (result.IsSuccess)
             {
-                return Ok(GetFilteredLocationsRequest.Response.Success(result.Data!));
+                return Ok(new GetFilteredLocationsRequest.Response(result.Data!));
             }
-            return BadRequest(GetFilteredLocationsRequest.Response.Failure(result.ErrorMessage!));
+            return Problem(
+                            detail: "Локация с указанным адресом не найдена",
+                            statusCode: StatusCodes.Status404NotFound,
+                            title: "Not Found"
+                           );
         }
 
     }

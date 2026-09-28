@@ -135,14 +135,14 @@
         if (!loadedFromState)
         {
             var response = await mediator.Send(new GetEventWithUsersRequest(Id));
-            if (response.IsSuccess && response.EventWithUsersDTO != null)
+            if (response.IsSuccess && response.Data.EventWithUsersDTO != null)
             {
-                currentEvent = response.EventWithUsersDTO;
-                users = response.EventWithUsersDTO.Users ?? new();
+                currentEvent = response.Data.EventWithUsersDTO;
+                users = response.Data.EventWithUsersDTO.Users ?? new();
             }
             else
             {
-                await toastService.Error("Ошибка", response.Message ?? "Не удалось загрузить событие");
+                await toastService.Error("Ошибка", response.ErrorMessage ?? "Не удалось загрузить событие");
             }
         }
 

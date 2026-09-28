@@ -80,7 +80,7 @@
             var response = await mediator.Send(new GetEventRequest(Id));
             if (response.IsSuccess)
             {
-                eventSummaty = response.EventSummary;
+                eventSummaty = response.Data.EventSummary;
             }
             else
             {

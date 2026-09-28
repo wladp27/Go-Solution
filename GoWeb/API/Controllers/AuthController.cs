@@ -26,7 +26,7 @@ namespace GoWeb.API.Controllers
         }
 
         [HttpPost]
-        [Route(LoginRequest.RouteTemplate)]
+        [Route(LoginRequest.Route)]
         public async Task<ActionResult<LoginRequest.Response>> login(UserLoginDTO loginViewModel)
         {
             if (ModelState.IsValid)

@@ -38,7 +38,12 @@ else
         filterDTO.SelectedTypeEvent = SelectedTypeEvent;
         if (SelectedCity!=0)
         {
-            var listNew = (await Mediator.Send(new GetPublishedEventsRequest(filterDTO))).eventSummary;
+            var listNew = new List<EventSummaryDTO>();
+            var resultRequred = await Mediator.Send(new GetPublishedEventsRequest(filterDTO));
+            if (resultRequred.IsSuccess)
+            {
+                listNew = resultRequred.Data.EventsSummary;
+            }
             if (listNew == null)
             {
                 await toastService.Error("Ошибка", "Ошибка сервера, либо сервер не доступен");

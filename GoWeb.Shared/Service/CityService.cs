@@ -21,16 +21,13 @@ namespace GoWeb.Shared.Service
         {
             if(cityList == null)
             {
-                try
-                {
-                    var response = await mediator.Send(new GetCitiesRequest());
-                    cityList = response.Cities ?? new();
-                    return OperationResult<List<CityDTO>>.Success(cityList);
-                }
-                catch(Exception ex) 
-                {
-                    return OperationResult<List<CityDTO>>.Failure(ex.Message);
-                }
+               var response = await mediator.Send(new GetCitiesRequest());
+               if(response.IsSuccess)
+               {
+                   cityList = response.Data.Cities ?? new();
+                   return OperationResult<List<CityDTO>>.Success(cityList);
+               }
+                return OperationResult<List<CityDTO>>.Failure(response.ErrorMessage);
             }
             return OperationResult<List<CityDTO>>.Success(cityList);
         }

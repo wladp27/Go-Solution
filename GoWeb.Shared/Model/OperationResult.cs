@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,6 +28,10 @@ namespace GoWeb.Shared.Model
         {
             Data = data;
         }
+
+
+        [MemberNotNullWhen(true, nameof(Data))]
+        public new bool IsSuccess => base.IsSuccess;
         public T?  Data { get; set; }
         public static OperationResult<T> Success(T data) => new(true, data, string.Empty);
         public new static OperationResult<T> Failure(string error) => new(false, default, error);

@@ -1,4 +1,5 @@
-﻿using GoWeb.Interfaces;
+﻿using FluentResults;
+using GoWeb.Interfaces;
 using GoWeb.Shared.Models;
 using GoWeb.Shared.Requests;
 using Microsoft.AspNetCore.Mvc;
@@ -29,8 +30,8 @@ namespace GoWeb.API.Controllers
         {
             var listTypes = await eventTypeService.GetAllAsync();
             if (listTypes != null)
-                return new GetAllTypesEventsRequest.Response(true,null,listTypes);
-            return NotFound(new GetAllTypesEventsRequest.Response(false, "Types not found", new()));
+                return Ok(new GetAllTypesEventsRequest.Response(listTypes));
+            return Problem(detail: "Types not found", statusCode: 400);
         }
 
     }
