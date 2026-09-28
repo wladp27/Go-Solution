@@ -8,39 +8,58 @@ namespace GoWeb.Shared.Service
 {
     public static class HttpClientExtensions
     {
-       public static async Task<OperationResult<TData>> SafePostAsJsonAsync<TModel, TData>(this HttpClient client, IRequestCastom<TModel, TData, OperationResult<TData>> request, CancellationToken cancellationToken)
-       {
+        public static async Task<OperationResult<TModelResponse>> SafePostAsJsonAsync<TRequestModel, TModelResponse>(
+                                                                     this HttpClient client,
+                                                                     IRequestPost<TRequestModel, TModelResponse> request,
+                                                                     CancellationToken cancellationToken)
+        {
             try
             {
                 var httpResponse = await client.PostAsJsonAsync(request.RouteTemplate, request.Model, cancellationToken);
+
                 if (httpResponse.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    return OperationResult<TData>.Failure("Ошибка авторизации");
+                    return OperationResult<TModelResponse>.Failure("Ошибка авторизации");
                 }
                 if (httpResponse.StatusCode == HttpStatusCode.Forbidden)
                 {
-                    return OperationResult<TData>.Failure("У вас нет прав для выполнения этого действия.");
+                    return OperationResult<TModelResponse>.Failure("У вас нет прав для выполнения этого действия.");
                 }
                 if (!httpResponse.IsSuccessStatusCode)
                 {
-                    var errorContent = await httpResponse.Content.ReadFromJsonAsync<OperationResult<TData>>(cancellationToken);
-                    return errorContent ??  OperationResult<TData>.Failure("Произошла непредвиденная ошибка");
+                    try
+                    {
+                        var errorContent = await httpResponse.Content.ReadFromJsonAsync<ValidationProblemDetails>(cancellationToken: cancellationToken);
+                        var errorMessage = errorContent?.Detail ?? errorContent?.Title ?? "Произошла непредвиденная ошибка";
+                        return OperationResult<TModelResponse>.Failure(errorMessage);
+                    }
+                    catch
+                    {
+                        return OperationResult<TModelResponse>.Failure($"Ошибка сервера: {(int)httpResponse.StatusCode}");
+                    }
                 }
-                var content = await httpResponse.Content.ReadFromJsonAsync<OperationResult<TData>>(cancellationToken);
-                return content ?? OperationResult<TData>.Failure("Получен пустой ответ от сервера");
+
+                var content = await httpResponse.Content.ReadFromJsonAsync<TModelResponse>(cancellationToken: cancellationToken);
+
+                if (content is null)
+                {
+                    return OperationResult<TModelResponse>.Failure("Получен пустой ответ от сервера");
+                }
+
+                return OperationResult<TModelResponse>.Success(content); 
+
             }
             catch (HttpRequestException)
             {
-                return OperationResult<TData>.Failure("Ошибка соединения с сервером");
+                return OperationResult<TModelResponse>.Failure("Ошибка соединения с сервером");
             }
             catch (TaskCanceledException)
             {
-                return OperationResult<TData>.Failure("Время ожидания запроса истекло или он был отменен");
+                return OperationResult<TModelResponse>.Failure("Время ожидания запроса истекло или он был отменен");
             }
             catch (Exception)
             {
-
-                return OperationResult<TData>.Failure("Произошла непредвиденная ошибка");
+                return OperationResult<TModelResponse>.Failure("Произошла непредвиденная ошибка на клиенте");
             }
         }
     }

@@ -7,10 +7,9 @@ using System.Text;
 
 namespace GoWeb.Shared.Interfaces
 {
-    public interface IRequestCastom<TModel,TData,out TResponse> : IRequest<TResponse>
-            where TResponse : OperationResult<TData>
+    public interface IRequestPost<TModelRequest,TModelResponse> : IRequest<OperationResult<TModelResponse>>
     {
-        public TModel Model { get; set; }
+        public TModelRequest Model { get; set; }
         public string RouteTemplate { get; }
     }
 }

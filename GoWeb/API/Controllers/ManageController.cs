@@ -20,7 +20,7 @@ namespace GoWeb.API.Controllers
         public async Task<ActionResult<CreateEventRequest.Response>> CreateEvent([FromBody] EventDTO eventCreate)
         {
            var idEvent = await eventService.AddAsync(eventCreate);
-           return Ok(CreateEventRequest.Response.Success(idEvent));
+           return Ok(new CreateEventRequest.Response(idEvent));
         }
 
 

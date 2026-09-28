@@ -40,7 +40,8 @@
                     if (response.IsSuccess)
                     {
                         await toastService.Success("Успешно", "Событие успешно создано.");
-                        NavigationManager.NavigateTo(Routes.EventDetails.Replace("{id}", response.IdEvent.ToString()));
+                        NavigationManager.NavigateTo(Routes.EventDetails.Replace("{id}", response.Data.idEvent.ToString()));
+
                     }
                     else
                     {

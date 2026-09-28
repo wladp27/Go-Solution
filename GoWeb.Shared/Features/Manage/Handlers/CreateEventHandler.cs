@@ -9,7 +9,7 @@ using System.Text;
 
 namespace GoWeb.Shared.Features.Manage.Handlers
 {
-    public class CreateEventHandler : IRequestHandler<CreateEventRequest, CreateEventRequest.Response>
+    public class CreateEventHandler : IRequestHandler<CreateEventRequest, OperationResult<CreateEventRequest.Response>>
     {
 
         private IHttpClientFactory httpClientFactory;
@@ -17,11 +17,10 @@ namespace GoWeb.Shared.Features.Manage.Handlers
         {
             this.httpClientFactory = httpClientFactory;
         }
-        public async Task<CreateEventRequest.Response> Handle(CreateEventRequest request, CancellationToken cancellationToken)
+        public async Task<OperationResult<CreateEventRequest.Response>> Handle(CreateEventRequest request, CancellationToken cancellationToken)
         {
             var client = httpClientFactory.CreateClient("TokenAPIClient");
-            var baseResult = await client.SafePostAsJsonAsync(request, cancellationToken);
-            return CreateEventRequest.Response.CastOperation(baseResult);
+            return await client.SafePostAsJsonAsync(request, cancellationToken);
         }
 
     }

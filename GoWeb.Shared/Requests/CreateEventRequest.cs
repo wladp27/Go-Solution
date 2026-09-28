@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 
 namespace GoWeb.Shared.Requests
 {
-    public record CreateEventRequest(EventDTO eventCreate) : IRequestCastom<EventDTO, int, CreateEventRequest.Response>
+    public record CreateEventRequest(EventDTO eventCreate) : IRequestPost<EventDTO, CreateEventRequest.Response> 
     {
 
 
@@ -18,23 +18,6 @@ namespace GoWeb.Shared.Requests
 
         public EventDTO Model { get; set; } = eventCreate;
 
-
-        public class Response : OperationResult<int>
-        {
-            public int IdEvent { get; set; }
-            [JsonConstructor]
-            public Response(bool isSuccess,  int Data, string errorMessage): base(isSuccess, Data, errorMessage) { }
-            public static Response CastOperation(OperationResult<int> operationResult)
-            {
-                if(operationResult.IsSuccess)
-                {
-                    var response = new Response(operationResult.IsSuccess, operationResult.Data, operationResult.ErrorMessage);
-                    response.IdEvent = operationResult.Data;
-                    return response;
-                }
-                return new(false, default!, operationResult.ErrorMessage);
-            }
-        }
-
+        public record Response(int idEvent);
     }
 }
