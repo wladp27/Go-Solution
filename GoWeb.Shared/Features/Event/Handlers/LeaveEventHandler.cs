@@ -1,4 +1,6 @@
-﻿using GoWeb.Shared.Requests;
+﻿using GoWeb.Shared.Model;
+using GoWeb.Shared.Requests;
+using GoWeb.Shared.Service;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -7,7 +9,7 @@ using System.Text;
 
 namespace GoWeb.Shared.Features.Event.Handlers
 {
-    public class LeaveEventHandler : IRequestHandler<LeaveEventRequest, LeaveEventRequest.Response>
+    public class LeaveEventHandler : IRequestHandler<LeaveEventRequest,OperationResult<LeaveEventRequest.Response>>
     {
 
         private readonly IHttpClientFactory httpClientFactory;
@@ -15,23 +17,12 @@ namespace GoWeb.Shared.Features.Event.Handlers
         {
             this.httpClientFactory = httpClientFactory;
         }
-        public async Task<LeaveEventRequest.Response> Handle(LeaveEventRequest request, CancellationToken cancellationToken)
+        public async Task<OperationResult<LeaveEventRequest.Response>> Handle(LeaveEventRequest request, CancellationToken cancellationToken)
         {
-            try
-            {
+           
                 var client = httpClientFactory.CreateClient("TokenAPIClient");
-                var response = await client.GetAsync(LeaveEventRequest.RouteTemplate.Replace("{id}", request.id.ToString()));
-                var statusLeave = await response.Content.ReadFromJsonAsync<LeaveEventRequest.Response>(cancellationToken);
-                return statusLeave ?? throw new Exception();
-            }
-            catch (HttpRequestException)
-            {
-                return new LeaveEventRequest.Response("Error", "Ошибка соединения с сервером");
-            }
-            catch (Exception)
-            {
-                return new LeaveEventRequest.Response("Error", "Произошла непредвиденная ошибка");
-            }
+                return await client.SafeGetAsJsonAsync<LeaveEventRequest.Response> (LeaveEventRequest.RouteTemplate.Replace("{id}", request.id.ToString()), cancellationToken);
+                
         }
     }
 }

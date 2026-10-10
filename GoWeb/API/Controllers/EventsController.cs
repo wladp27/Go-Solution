@@ -1,5 +1,6 @@
 ﻿using GoWeb.Interfaces;
 using GoWeb.Models;
+using GoWeb.Service;
 using GoWeb.Shared.Models;
 using GoWeb.Shared.Requests;
 using GoWeb.Shared.Сonstants;
@@ -58,9 +59,11 @@ namespace GoWeb.API.Controllers
             var users = await userEventService.GetUsersEventAsync(id);
             if(users != null)
             {
-                return Ok(new GetUsersFromEventRequest.Response(true,null,users));
+                return Ok(new GetUsersFromEventRequest.Response(users));
             }
-            return NotFound(new GetUsersFromEventRequest.Response(false, $"Событие с ID {id} не найдено." , new ()));
+            return Problem( detail: "Не удалось загрузить пользователей события",
+                            statusCode: StatusCodes.Status404NotFound,
+                            title: "Not Found");
         }
 
 
@@ -95,27 +98,49 @@ namespace GoWeb.API.Controllers
             var idUser = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(idUser))
             {
-                return Unauthorized(new JoinEventRequest.Response("Unauthorized","Не удалось определить пользователя или сессия недействительна."));
+                return Problem(
+                    detail: "Не удалось определить пользователя или сессия недействительна.",
+                    statusCode: StatusCodes.Status401Unauthorized
+                );
             }
 
             var result = await userEventService.JoinAsync(idUser, id);
 
             return result switch
             {
-                JoinResult.SuccessNewRegistration => Ok(new JoinEventRequest.Response("Success", "Вы успешно зарегистрированы на мероприятие!")),
-                JoinResult.SuccessStatusUpdated => Ok(new JoinEventRequest.Response("Success", "Вы успешно зарегистрированы на мероприятие!")),
-                JoinResult.SuccessInReserve => Ok(new JoinEventRequest.Response("Success", "Места закончились, вы добавлены в резерв.")),
+                JoinResult.SuccessNewRegistration or JoinResult.SuccessStatusUpdated =>
+                    Ok(new JoinEventRequest.Response("Вы успешно зарегистрированы на мероприятие!")),
 
-                JoinResult.AlreadyRegistered => BadRequest(new JoinEventRequest.Response("Error", "Вы уже записаны на это мероприятие.")),
-                JoinResult.TimeCoincidences => BadRequest(new JoinEventRequest.Response("Error", "Вы уже записаны на другое мероприятие в это же время.")),
-                JoinResult.IsufficientlyRequiredRating => BadRequest(new JoinEventRequest.Response("Error", "Недостаточно высокий рейтинг для участия.")),
+                JoinResult.SuccessInReserve =>
+                    Ok(new JoinEventRequest.Response("Места закончились, вы добавлены в резерв.")),
 
-                JoinResult.UserNotFound => NotFound(new JoinEventRequest.Response("Error", "Пользователь не найден.")),
-                JoinResult.EventNotFound => NotFound(new JoinEventRequest.Response("Error", "Мероприятие не найдено.")),
+                JoinResult.AlreadyRegistered => Problem(
+                    detail: "Вы уже записаны на это мероприятие.",
+                    statusCode: StatusCodes.Status400BadRequest),
 
-                JoinResult.NoAccessToEvent => NotFound(new JoinEventRequest.Response("Error", "Регистрация на мероприятие недоступна.")),
+                JoinResult.TimeCoincidences => Problem(
+                    detail: "Вы уже записаны на другое мероприятие в это же время.",
+                    statusCode: StatusCodes.Status400BadRequest),
 
-                _ => StatusCode(500, new JoinEventRequest.Response("Error", "Произошла непредвиденная ошибка."))
+                JoinResult.IsufficientlyRequiredRating => Problem(
+                    detail: "Недостаточно высокий рейтинг для участия.",
+                    statusCode: StatusCodes.Status400BadRequest),
+
+                JoinResult.UserNotFound => Problem(
+                    detail: "Пользователь не найден.",
+                    statusCode: StatusCodes.Status404NotFound),
+
+                JoinResult.EventNotFound => Problem(
+                    detail: "Мероприятие не найдено.",
+                    statusCode: StatusCodes.Status404NotFound),
+
+                JoinResult.NoAccessToEvent => Problem(
+                    detail: "Регистрация на мероприятие недоступна.",
+                    statusCode: StatusCodes.Status403Forbidden), // Для отсутствия доступа семантически лучше 403 Forbidden
+
+                _ => Problem(
+                    detail: "Произошла непредвиденная ошибка при записи.",
+                    statusCode: StatusCodes.Status500InternalServerError)
             };
 
         }
@@ -127,24 +152,45 @@ namespace GoWeb.API.Controllers
             var idUser = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(idUser))
             {
-                return Unauthorized(new LeaveEventRequest.Response("Unauthorized", "Не удалось определить пользователя или сессия недействительна."));
+                return Problem(
+                    detail: "Не удалось определить пользователя или сессия недействительна.",
+                    statusCode: StatusCodes.Status401Unauthorized
+                );
             }
 
             var result = await userEventService.LeaveUserAsync(idUser, id);
 
             return result switch
             {
-                LeaveResult.SuccessLeave => Ok(new LeaveEventRequest.Response("Success", "Вы успешно выписались из события.")),
+                LeaveResult.SuccessLeave => Ok(new LeaveEventRequest.Response("Вы успешно выписаны из мероприятия")),
 
-                LeaveResult.AlreadyLeave => BadRequest(new LeaveEventRequest.Response("Error", "Выписка невозможна, вы уже выписаны.")),
-                LeaveResult.UserIsNotRegistered => BadRequest(new LeaveEventRequest.Response("Error", "Вы не были зарегистрированы на данное событие.")),
-                LeaveResult.EventIsOver => BadRequest(new LeaveEventRequest.Response("Error", "Событие уже завершилось, выписка невозможна.")),
-                LeaveResult.EvenWillStartSoon => BadRequest(new LeaveEventRequest.Response("Error", "Событие скоро начнется, выписка невозможна.")),
+                LeaveResult.AlreadyLeave => Problem(
+                    detail: "Выписка невозможна, вы уже выписаны.",
+                    statusCode: StatusCodes.Status400BadRequest),
 
-                LeaveResult.EventNotFound => NotFound(new LeaveEventRequest.Response("Error", "Мероприятие с таким id не найдено.")),
-                LeaveResult.UserNotFound => NotFound(new LeaveEventRequest.Response("Error", "Пользователь не найден в системе.")),
+                LeaveResult.UserIsNotRegistered => Problem(
+                    detail: "Вы не были зарегистрированы на данное событие.",
+                    statusCode: StatusCodes.Status400BadRequest),
 
-                _ => StatusCode(500, new LeaveEventRequest.Response("Error", "Произошла непредвиденная ошибка."))
+                LeaveResult.EventIsOver => Problem(
+                    detail: "Событие уже завершилось, выписка невозможна.",
+                    statusCode: StatusCodes.Status400BadRequest),
+
+                LeaveResult.EvenWillStartSoon => Problem(
+                    detail: "Событие скоро начнется, выписка невозможна.",
+                    statusCode: StatusCodes.Status400BadRequest),
+
+                LeaveResult.EventNotFound => Problem(
+                    detail: "Мероприятие с таким id не найдено.",
+                    statusCode: StatusCodes.Status404NotFound),
+
+                LeaveResult.UserNotFound => Problem(
+                    detail: "Пользователь не найден в системе.",
+                    statusCode: StatusCodes.Status404NotFound),
+
+                _ => Problem(
+                    detail: "Произошла непредвиденная ошибка при выписке.",
+                    statusCode: StatusCodes.Status500InternalServerError)
             };
         }
 

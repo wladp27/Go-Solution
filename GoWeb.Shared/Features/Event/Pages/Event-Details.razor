@@ -123,11 +123,11 @@
                 var responseUsers = await mediator.Send(new GetUsersFromEventRequest(Id));
                 if (responseUsers.IsSuccess)
                 {
-                    users = responseUsers.users ?? new();
+                    users = responseUsers.Data.users ?? new();
                 }
                 else
                 {
-                    await toastService.Error("Ошибка", responseUsers.Message ?? "Не удалось загрузить участников");
+                    await toastService.Error("Ошибка", responseUsers.ErrorMessage ?? "Не удалось загрузить участников");
                 }
             }
         }

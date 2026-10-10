@@ -1,13 +1,12 @@
-﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using GoWeb.Shared.Model;
+using MediatR;
+
 
 namespace GoWeb.Shared.Requests
 {
-    public record LeaveEventRequest(int id) : IRequest<LeaveEventRequest.Response>
+    public record LeaveEventRequest(int id) : IRequest<OperationResult<LeaveEventRequest.Response>>
     {
         public const string RouteTemplate = "/api/event/{id}/leave";
-        public record Response(string Code, string Message) : BaseResponse(Code, Message);
+        public record Response(string Message);
     }
 }

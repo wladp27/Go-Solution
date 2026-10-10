@@ -1,5 +1,7 @@
 ﻿using FluentResults;
+using GoWeb.Shared.Model;
 using GoWeb.Shared.Requests;
+using GoWeb.Shared.Service;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -8,41 +10,17 @@ using System.Text;
 
 namespace GoWeb.Shared.Features.Event.Handlers
 {
-    public class GetUsersFromEventHandler : IRequestHandler<GetUsersFromEventRequest, GetUsersFromEventRequest.Response>
+    public class GetUsersFromEventHandler : IRequestHandler<GetUsersFromEventRequest,OperationResult<GetUsersFromEventRequest.Response>>
     {
         private readonly IHttpClientFactory httpClientFactory;
         public GetUsersFromEventHandler(IHttpClientFactory httpClientFactory)
         {
             this.httpClientFactory = httpClientFactory;
         }
-        public async Task<GetUsersFromEventRequest.Response> Handle(GetUsersFromEventRequest request, CancellationToken cancellationToken)
+        public async Task<OperationResult<GetUsersFromEventRequest.Response>> Handle(GetUsersFromEventRequest request, CancellationToken cancellationToken)
         {
-            try
-            {
-                var client = httpClientFactory.CreateClient("TokenAPIClient");
-                var url = GetUsersFromEventRequest.RouteTemplate.Replace("{id}", request.idEvent.ToString());
-                var response = await client.GetAsync(url, cancellationToken);
-                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    var result = await response.Content.ReadFromJsonAsync<GetUsersFromEventRequest.Response>(cancellationToken);
-                    return result ?? new GetUsersFromEventRequest.Response(false, "Ресурс не найден", new());
-                }
-                if (!response.IsSuccessStatusCode)
-                {
-                    return new GetUsersFromEventRequest.Response(false, "Ошибка сервера", new());
-                }
-                var content = await response.Content.ReadFromJsonAsync<GetUsersFromEventRequest.Response>(cancellationToken);
-                return content ?? new GetUsersFromEventRequest.Response(true, null, new());
-            }
-            catch (HttpRequestException )
-            {
-                return new GetUsersFromEventRequest.Response(false, "Ошибка соединения с сервером", new());
-            }
-            catch (Exception )
-            {
-
-                return new GetUsersFromEventRequest.Response(false, "Произошла непредвиденная ошибка", new());
-            }
+            var client = httpClientFactory.CreateClient("TokenAPIClient");
+            return await client.SafeGetAsJsonAsync<GetUsersFromEventRequest.Response>(GetUsersFromEventRequest.RouteTemplate.Replace("{id}", request.idEvent.ToString()), cancellationToken);
         }
     }
 }
