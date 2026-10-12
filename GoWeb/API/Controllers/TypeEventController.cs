@@ -21,9 +21,13 @@ namespace GoWeb.API.Controllers
         {
             var listTypes =  await eventService.GetTypesEventsForCity(idCity);
             if (listTypes!=null)
-                return new GetTypeEventsForCityRequest.Response(listTypes);
-            return NotFound();
+                return Ok(new GetTypeEventsForCityRequest.Response(listTypes));
+            return Problem(
+                          detail: "Не удалось получить список типов событий",
+                          statusCode: StatusCodes.Status404NotFound,
+                          title: "Not Found");
         }
+
 
         [HttpGet(GetAllTypesEventsRequest.RouteTemplate)]
         public async Task<ActionResult<GetAllTypesEventsRequest.Response>>GetAllTypes()
@@ -31,8 +35,10 @@ namespace GoWeb.API.Controllers
             var listTypes = await eventTypeService.GetAllAsync();
             if (listTypes != null)
                 return Ok(new GetAllTypesEventsRequest.Response(listTypes));
-            return Problem(detail: "Types not found", statusCode: 400);
+            return Problem(
+                          detail: "Не удалось получить список типов событий",
+                          statusCode: StatusCodes.Status404NotFound,
+                          title: "Not Found");
         }
-
     }
 }

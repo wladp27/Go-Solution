@@ -32,12 +32,15 @@ namespace GoWeb.API.Controllers
         public async Task<ActionResult<GetMyEventsRequest.Response>> MyEvents()
         {
             var listEvent = await userEvent.GetAllAttendedEventsUserAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var eventView = mapper.Map<List<EventSummaryDTO>>(listEvent);
-            if (eventView != null)
+            var eventsView = mapper.Map<List<EventSummaryDTO>>(listEvent);
+            if (eventsView != null)
             {
-                return new GetMyEventsRequest.Response(eventView);
+                return Ok(new GetMyEventsRequest.Response(eventsView));
             }
-            return NotFound(new { message = $"Ошибка сервера" });
+            return Problem(
+                           detail: "Не удалось получить список событий",
+                           statusCode: StatusCodes.Status404NotFound,
+                           title: "Not Found");
         }
     }
 }

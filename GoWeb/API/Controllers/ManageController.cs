@@ -24,11 +24,11 @@ namespace GoWeb.API.Controllers
         }
 
 
-        [HttpPut(EditEventRequest.RouteTemplate)]
+        [HttpPut(EditEventRequest.Route)]
         public async Task<ActionResult<EditEventRequest.Response>> EditEvent([FromBody] EventDTO eventEdit)
         {
            await eventService.UpdateAsync(eventEdit);
-           return Ok(EditEventRequest.Response.Success());
+           return Ok(new EditEventRequest.Response());
         }
 
 
