@@ -74,8 +74,8 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Lockout.AllowedForNewUsers = true;
 });
 
-// 3. Регистрация MVC/Контроллеров
-builder.Services.AddControllersWithViews();
+//// 3. Регистрация MVC/Контроллеров УДАЛИТЬ!!!!!!!!!!!!!!!!!!!
+//builder.Services.AddControllersWithViews();
 
 //для api
 builder.Services.AddControllers();
@@ -198,34 +198,40 @@ app.UseHttpsRedirection();
 
 app.UseRequestLocalization();
 app.UseStaticFiles();
+app.UseBlazorFrameworkFiles();
 app.UseRouting();
 app.UseCors("BlazorCorsPolicy");
+//для api
 app.UseAuthentication();
 app.UseAuthorization();
-
-
-//для api
 app.MapControllers();
-
-app.MapControllerRoute(
-    name: "admin",
-    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}" 
-);
-
-app.MapControllerRoute(
-    name: "manage",
-    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
-);
-
-app.MapControllerRoute(
-    name: "user",
-    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
-);
+app.MapFallbackToFile("index.html");
 
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+
+
+
+
+//app.MapControllerRoute(
+//    name: "admin",
+//    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}" 
+//);
+
+//app.MapControllerRoute(
+//    name: "manage",
+//    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
+//);
+
+//app.MapControllerRoute(
+//    name: "user",
+//    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
+//);
+
+
+//app.MapControllerRoute(
+//    name: "default",
+//    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 
 
