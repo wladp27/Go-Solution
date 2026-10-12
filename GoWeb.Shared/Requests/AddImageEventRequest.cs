@@ -1,4 +1,5 @@
-﻿using GoWeb.Shared.Model;
+﻿using GoWeb.Shared.Interfaces;
+using GoWeb.Shared.Model;
 using MediatR;
 using Microsoft.AspNetCore.Components.Forms;
 using System;
@@ -8,18 +9,14 @@ using System.Text.Json.Serialization;
 
 namespace GoWeb.Shared.Requests
 {
-    public record AddImageEventRequest(IBrowserFile Image) : IRequest<AddImageEventRequest.Response>
+    public record AddImageEventRequest(IBrowserFile Image) : IRequestPost<IBrowserFile, AddImageEventRequest.Response>
     {
-        public const string RouteTemplate = "/api/images/add";
-        public class Response : OperationResult<string>
-        {
-            [JsonConstructor]
-            public Response(bool isSuccess, string data, string errorMessage) : base(isSuccess, data, errorMessage) { }
+        public const string Route = "/api/images/add";
 
-            public new static Response Success(string value) => new(true, value, string.Empty);
+        public IBrowserFile Model { get; set; } = Image;
 
-            public new static Response Failure(string errorMessage) =>
-                new(false, default!, errorMessage);
-        }
+        public string RouteTemplate => Route;
+
+        public record Response(string ImagePath);
     }
 }
