@@ -35,7 +35,7 @@
                 var result = await mediator.Send(new AddImageEventRequest(browserFile));
                 if (result.IsSuccess)
                 {
-                    eventCreate.ImagePath = result.Data.ImagePath;
+                    eventCreate.ImagePath = result.Data;
                     var response = await mediator.Send(new CreateEventRequest(eventCreate));
                     if (response.IsSuccess)
                     {

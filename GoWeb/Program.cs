@@ -74,8 +74,8 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Lockout.AllowedForNewUsers = true;
 });
 
-// 3. Регистрация MVC/Контроллеров УДАЛИТЬ перехожу на blazor
-//  builder.Services.AddControllersWithViews();
+// 3. Регистрация MVC/Контроллеров
+builder.Services.AddControllersWithViews();
 
 //для api
 builder.Services.AddControllers();
@@ -184,7 +184,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-
+app.UseHttpsRedirection();
 
 
 //var defaultCulture = "ru-RU";
@@ -195,43 +195,37 @@ if (!app.Environment.IsDevelopment())
 //    SupportedUICultures = new List<CultureInfo> { new CultureInfo(defaultCulture) }
 //};
 
-app.UseHttpsRedirection();
+
 app.UseRequestLocalization();
+app.UseStaticFiles();
 app.UseRouting();
 app.UseCors("BlazorCorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseStaticFiles();
-app.UseBlazorFrameworkFiles();
+
+
 //для api
 app.MapControllers();
 
-app.MapFallbackToFile("index.html");
+app.MapControllerRoute(
+    name: "admin",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}" 
+);
+
+app.MapControllerRoute(
+    name: "manage",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
+);
+
+app.MapControllerRoute(
+    name: "user",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
+);
 
 
-
-
-
-
-//app.MapControllerRoute(
-//    name: "admin",
-//    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}" 
-//);
-
-//app.MapControllerRoute(
-//    name: "manage",
-//    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
-//);
-
-//app.MapControllerRoute(
-//    name: "user",
-//    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
-//);
-
-
-//app.MapControllerRoute(
-//    name: "default",
-//    pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 
 
