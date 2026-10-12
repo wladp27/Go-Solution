@@ -17,9 +17,9 @@ namespace GoWeb.API.Controllers
         }
 
         [HttpGet(GetTypeEventsForCityRequest.RouteTemplate)]
-        public async Task<ActionResult<GetTypeEventsForCityRequest.Response>> GetTypesEvents(int idCity)
+        public async Task<ActionResult<GetTypeEventsForCityRequest.Response>> GetTypesEvents(int id)
         {
-            var listTypes =  await eventService.GetTypesEventsForCity(idCity);
+            var listTypes =  await eventService.GetTypesEventsForCity(id);
             if (listTypes!=null)
                 return Ok(new GetTypeEventsForCityRequest.Response(listTypes));
             return Problem(
