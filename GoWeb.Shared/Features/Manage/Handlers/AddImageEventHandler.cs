@@ -1,4 +1,6 @@
-﻿using GoWeb.Shared.Requests;
+﻿using GoWeb.Shared.Model;
+using GoWeb.Shared.Requests;
+using GoWeb.Shared.Service;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -7,7 +9,7 @@ using System.Text;
 
 namespace GoWeb.Shared.Features.Manage.Handlers
 {
-    public class AddImageEventHandler : IRequestHandler<AddImageEventRequest, AddImageEventRequest.Response>
+    public class AddImageEventHandler : IRequestHandler<AddImageEventRequest,OperationResult<AddImageEventRequest.Response>>
     {
         private readonly IHttpClientFactory httpClientFactory;
 
@@ -16,7 +18,7 @@ namespace GoWeb.Shared.Features.Manage.Handlers
             this.httpClientFactory = httpClientFactory;
         }   
 
-        public async Task<AddImageEventRequest.Response> Handle(AddImageEventRequest request, CancellationToken cancellationToken)
+        public async Task<OperationResult<AddImageEventRequest.Response>> Handle(AddImageEventRequest request, CancellationToken cancellationToken)
         {
             var client = httpClientFactory.CreateClient("TokenAPIClient");
             try
@@ -24,24 +26,12 @@ namespace GoWeb.Shared.Features.Manage.Handlers
                 using var contentImage = new MultipartFormDataContent();
                 using var fileStream = request.Image.OpenReadStream(maxAllowedSize: 1024 * 1024 * 10);
                 contentImage.Add(new StreamContent(fileStream), "image", request.Image.Name);
-                var httpResponse = await client.PostAsync(AddImageEventRequest.RouteTemplate, contentImage, cancellationToken);
-
-                if (!httpResponse.IsSuccessStatusCode)
-                {
-                    var errorContent = await httpResponse.Content.ReadFromJsonAsync<AddImageEventRequest.Response>(cancellationToken);
-                    return errorContent ?? AddImageEventRequest.Response.Failure("Произошла непредвиденная ошибка");
-                }
-                var content = await httpResponse.Content.ReadFromJsonAsync<AddImageEventRequest.Response>(cancellationToken);
-                return content ?? AddImageEventRequest.Response.Failure("Получен пустой ответ от сервера");
-            }
-            catch (HttpRequestException)
-            {
-                return AddImageEventRequest.Response.Failure("Ошибка соединения с сервером");
+                return await client.SafePostAsJsonAsync(request, contentImage, cancellationToken);
             }
             catch (Exception)
             {
 
-                return AddImageEventRequest.Response.Failure("Произошла непредвиденная ошибка");
+                return OperationResult<AddImageEventRequest.Response>.Failure("Произошла непредвиденная ошибка");
             }
         }
     }
