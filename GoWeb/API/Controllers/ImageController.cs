@@ -19,7 +19,7 @@ namespace GoWeb.API.Controllers
             this.webHostEnvironment = webHostEnvironment;
         }
 
-        [HttpPost(AddImageEventRequest.RouteTemplate)]
+        [HttpPost(AddImageEventRequest.Route)]
         public async Task<ActionResult<AddImageEventRequest.Response>> WriterImages(IFormFile image)
         {
             string uploadsFolder = Path.Combine(webHostEnvironment.WebRootPath, "images", "events");
@@ -28,10 +28,16 @@ namespace GoWeb.API.Controllers
             {
                 var extension = Path.GetExtension(image.FileName).ToLower();
                 if (!allowedExtensions.Contains(extension))
-                    return BadRequest(AddImageEventRequest.Response.Failure("Недопустимый формат изображения"));
-                
-                if (image.Length > 10 * 1024 * 1024) 
-                    return BadRequest(AddImageEventRequest.Response.Failure("Размер изображения превышает допустимый лимит (10 MB)"));
+                    return Problem(
+                            detail: "Недопустимый формат изображения",
+                            statusCode: StatusCodes.Status400BadRequest,
+                            title: "Bad Request");
+
+                if (image.Length > 10 * 1024 * 1024)
+                    return Problem(
+                            detail: "Размер изображения превышает допустимый лимит (10 MB)",
+                            statusCode: StatusCodes.Status400BadRequest,
+                            title: "Предел размера изображения превышен");
 
                 if (!Directory.Exists(uploadsFolder))
                 {
@@ -45,9 +51,12 @@ namespace GoWeb.API.Controllers
                 {
                     await image.CopyToAsync(fileStream);
                 }
-                return Ok(AddImageEventRequest.Response.Success(uniqueFileName));
+                return Ok(uniqueFileName);
             }
-            return BadRequest(AddImageEventRequest.Response.Failure("Ошибка загрузки изображения"));
+            return Problem(
+                            detail: "Не удалось загрузить изображение",
+                            statusCode: StatusCodes.Status400BadRequest,
+                            title: "Ошибка загрузки изображения");
         }
 
 
