@@ -1,4 +1,6 @@
-﻿using GoWeb.Shared.Requests;
+﻿using GoWeb.Shared.Model;
+using GoWeb.Shared.Requests;
+using GoWeb.Shared.Service;
 using MediatR;
 using System.Net;
 using System.Net.Http;
@@ -6,7 +8,7 @@ using System.Net.Http.Json;
 
 namespace GoWeb.Shared.Features.Event.Handlers
 {
-    public class GetMyEventsHandler : IRequestHandler<GetMyEventsRequest, GetMyEventsRequest.Response>
+    public class GetMyEventsHandler : IRequestHandler<GetMyEventsRequest,OperationResult<GetMyEventsRequest.Response>>
     {
 
         private readonly IHttpClientFactory httpClientFactory;
@@ -16,38 +18,11 @@ namespace GoWeb.Shared.Features.Event.Handlers
 
 
         }
-        public async Task<GetMyEventsRequest.Response> Handle(GetMyEventsRequest request, CancellationToken cancellationToken)
+        public async Task<OperationResult<GetMyEventsRequest.Response>> Handle(GetMyEventsRequest request, CancellationToken cancellationToken)
         {
-            try
-            {
+          
                 var client = httpClientFactory.CreateClient("TokenAPIClient");
-                var httpResponse = await client.GetAsync(GetMyEventsRequest.RouteTemplate);
-                if (!httpResponse.IsSuccessStatusCode)
-                {
-                    if (httpResponse.StatusCode == HttpStatusCode.Unauthorized)
-                    {
-                        var errorMessage = "Ошибка авторизации";
-                        throw new Exception(errorMessage);
-                    }     
-                    throw new Exception();
-                }
-                var content = await httpResponse.Content.ReadFromJsonAsync<GetMyEventsRequest.Response>(cancellationToken: cancellationToken);
-                if (content != null)
-                    return content;
-                throw new Exception();
-            }
-            catch (HttpRequestException)
-            {
-                throw new Exception("Не удалось подключиться к серверу. Проверьте сеть.");
-            }
-            catch (Exception ex)
-            {
-                if (ex.Message.StartsWith("Ошибка авторизации"))
-                {
-                    throw;
-                }
-                throw new Exception("Ошибка на стороне сервера");
-            }
+                return await client.SafeGetAsJsonAsync<GetMyEventsRequest.Response>(GetMyEventsRequest.RouteTemplate,cancellationToken);
         }
     }
 }

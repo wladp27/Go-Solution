@@ -1,4 +1,5 @@
-﻿using GoWeb.Shared.Model;
+﻿using GoWeb.Shared.Interfaces;
+using GoWeb.Shared.Model;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -6,16 +7,16 @@ using System.Text;
 
 namespace GoWeb.Shared.Requests
 {
-    public record EditEventRequest(EventDTO eventEdit) : IRequest<EditEventRequest.Response>
+    public record EditEventRequest(EventDTO eventEdit) : IRequestPut<EventDTO,EditEventRequest.Response>
     {
-        public const string RouteTemplate = "/api/events/{id}";
-        public class Response : OperationResult
-        {
-            public Response(bool isSuccess, string errorMessage) : base(isSuccess, errorMessage) { }
-            public new static Response Success() => new(true,string.Empty);
+        public const string Route = "/api/events/{id}";
 
-            public new static Response Failure(string errorMessage) => new(false, errorMessage);
-        }
+        public EventDTO Model { get ; set; } = eventEdit;
+
+        public string RouteTemplate => Route;
+
+        public record Response();
+
     }
 }
 

@@ -95,16 +95,18 @@ else
         selectedIdCity = idCity;
         if (idCity != 0)
         {
-            try
-            {
-                typesEvent = (await mediator.Send(new GetTypeEventsForCityRequest(selectedIdCity)))?.typesEvents ?? new();
-
-            }
-            catch (Exception)
-            {
-                typesEvent = null;
-                await toastService.Error("Ошибка!", "Ошибка сервера");
-            }
+                 
+                var response = await mediator.Send(new GetTypeEventsForCityRequest(selectedIdCity));
+                if(response.IsSuccess)
+                {
+                    typesEvent = response.Data.typesEvents;
+                }
+                else
+                {
+                    await toastService.Error("Ошибка!", "Ошибка сервера");
+                    typesEvent = new();
+                }
+            
         }
         else
         {

@@ -135,15 +135,11 @@
     private async Task<List<EventTypeDTO>> LoadTypesEvents(int idCity)
     {
         flagHidden = false;
-        try
-        {
-            var response = await mediator.Send(new GetTypeEventsForCityRequest(idCity));
-            return response.typesEvents ?? new();
-        }
-        catch
-        {
+        var response = await mediator.Send(new GetTypeEventsForCityRequest(idCity));
+        if(response.IsSuccess)
+            return response.Data.typesEvents ?? new();
+        else
             await toastService.Error("Ошибка!", "Ошибка сервера");
-        }
         return new();
     }
 

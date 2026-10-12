@@ -1,4 +1,6 @@
-﻿using GoWeb.Shared.Requests;
+﻿using GoWeb.Shared.Model;
+using GoWeb.Shared.Requests;
+using GoWeb.Shared.Service;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -7,37 +9,18 @@ using System.Text;
 
 namespace GoWeb.Shared.Features.Manage.Handlers
 {
-    public class EditEventHandler : IRequestHandler<EditEventRequest, EditEventRequest.Response>
+    public class EditEventHandler : IRequestHandler<EditEventRequest, OperationResult<EditEventRequest.Response>>
     {
         private IHttpClientFactory httpClientFactory;
         public EditEventHandler(IHttpClientFactory httpClientFactory)
         {
             this.httpClientFactory = httpClientFactory;
         }
-        public async Task<EditEventRequest.Response> Handle(EditEventRequest request, CancellationToken cancellationToken)
+        public async Task<OperationResult<EditEventRequest.Response>> Handle(EditEventRequest request, CancellationToken cancellationToken)
         {
             var client = httpClientFactory.CreateClient("TokenAPIClient");
-            try
-            {
-                var httpResponse = await client.PutAsJsonAsync(EditEventRequest.RouteTemplate.Replace("{id}", request.eventEdit.Id.ToString()), request.eventEdit, cancellationToken);
-                if (!httpResponse.IsSuccessStatusCode)
-                {
-                    var errorContent = await httpResponse.Content.ReadFromJsonAsync<EditEventRequest.Response>(cancellationToken);
-                    return errorContent ?? EditEventRequest.Response.Failure("Произошла непредвиденная ошибка");
-                }
-                var content = await httpResponse.Content.ReadFromJsonAsync<EditEventRequest.Response>(cancellationToken);
-                return content ?? EditEventRequest.Response.Failure("Получен пустой ответ от сервера");
-            }
-            catch (HttpRequestException)
-            {
-                return EditEventRequest.Response.Failure("Ошибка соединения с сервером");
-            }
-            catch (Exception)
-            {
-
-                return EditEventRequest.Response.Failure("Произошла непредвиденная ошибка");
-            }
-
+            return await client.SafePutAsJsonAsync(request,cancellationToken);
+            
         }
     }
 }

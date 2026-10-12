@@ -1,4 +1,5 @@
-﻿using GoWeb.Shared.Models;
+﻿using GoWeb.Shared.Model;
+using GoWeb.Shared.Models;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -8,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace GoWeb.Shared.Requests
 {
-    public record GetTypeEventsForCityRequest(int idCity):IRequest<GetTypeEventsForCityRequest.Response>
+    public record GetTypeEventsForCityRequest(int idCity):IRequest<OperationResult<GetTypeEventsForCityRequest.Response>>
     {
-        public const string RouteTemplate = "/api/type-events/{idCity}";
+        public const string RouteTemplate = "/api/city/type-events/{id}";
         public record Response(List<EventTypeDTO> typesEvents);
     }
 }

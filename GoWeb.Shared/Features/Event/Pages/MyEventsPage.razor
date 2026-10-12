@@ -1,6 +1,5 @@
 ﻿@using BootstrapBlazor.Components
 @using GoWeb.Shared.Features.Event.Components
-@using Microsoft.AspNetCore.Components.Authorization
 @page "/my-events"
 @attribute [Authorize]
 
@@ -35,21 +34,17 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		try
+
+		logading = true;
+		var response = await mediator.Send(new GetMyEventsRequest());
+		if (response.IsSuccess)
 		{
-			logading = true;
-			var response = await mediator.Send(new GetMyEventsRequest());
-			if (response != null && response.eventSummary != null)
-			{
-				list = response.eventSummary;
-				logading = false;
-			}
-			
+			list = response.Data.eventSummary;
+			logading = false;
 		}
-		catch(Exception ex)
+		else
 		{
-			list = new();
-			await toastService.Error("Ошибка", ex.Message); 
+			await toastService.Error("Ошибка", response.ErrorMessage);
 		}
 	}
 

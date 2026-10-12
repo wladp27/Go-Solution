@@ -41,6 +41,21 @@ namespace GoWeb.Shared.Service
             }
         }
 
+        public static async Task<OperationResult<TModelResponse>> SafePutAsJsonAsync<TRequestModel, TModelResponse>(
+                                                                    this HttpClient client,
+                                                                    IRequestPut<TRequestModel, TModelResponse> request,
+                                                                    CancellationToken cancellationToken)
+        {
+            try
+            {
+                var httpResponse = await client.PutAsJsonAsync(request.RouteTemplate, request.Model, cancellationToken);
+                return await HandlerErrors<TModelResponse>(httpResponse, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return OperationResult<TModelResponse>.Failure("Произошла непредвиденная ошибка на клиенте");
+            }
+        }
 
         public static async Task<OperationResult<TModelResponse>> HandlerErrors<TModelResponse>(HttpResponseMessage httpResponse, CancellationToken cancellationToken)
         {
