@@ -3,6 +3,7 @@ WORKDIR /src
 
 
 COPY ["GoWeb/GoWeb.csproj", "GoWeb/"]
+COPY ["GoWebBlazor/GoWebBlazor.csproj", "GoWebBlazor/"]
 COPY ["GoWeb.Shared/GoWeb.Shared.csproj", "GoWeb.Shared/"]
 COPY ["GoWebApplication.Db/GoWebApplication.Db.csproj", "GoWebApplication.Db/"]
 
