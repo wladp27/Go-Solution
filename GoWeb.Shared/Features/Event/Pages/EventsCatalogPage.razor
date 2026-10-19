@@ -40,10 +40,21 @@ else
         {
             var listNew = new List<EventSummaryDTO>();
             var resultRequred = await Mediator.Send(new GetPublishedEventsRequest(filterDTO));
+            var resultKtoKuda = await Mediator.Send(new GetEventKtoKudaRequest());
             if (resultRequred.IsSuccess)
             {
                 listNew = resultRequred.Data.EventsSummary;
             }
+
+            if (resultKtoKuda.IsSuccess)
+            {
+               listNew.AddRange(resultKtoKuda.Data.Events);
+            }
+            else
+            {
+                await toastService.Error("Ошибка", resultKtoKuda.ErrorMessage);
+            }
+
             if (listNew == null)
             {
                 await toastService.Error("Ошибка", "Ошибка сервера, либо сервер не доступен");

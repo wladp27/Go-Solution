@@ -136,6 +136,7 @@ builder.Services.AddScoped<ICacheService, RedisCacheService>();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IAuthorizationHandler, CheckAdminHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, CheckOrganizerHandler>();
+builder.Services.AddScoped<KtoKudaService>();
 
 // --- НАСТРОЙКА ЛОКАЛИЗАЦИИ ---
 builder.Services.Configure<RequestLocalizationOptions>(options =>
