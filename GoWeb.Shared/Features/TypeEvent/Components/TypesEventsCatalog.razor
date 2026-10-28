@@ -1,5 +1,6 @@
 ﻿@using BootstrapBlazor.Components
 @using GoWeb.Shared.Features.Event.Pages
+@using GoWeb.Shared.Features.Map.Components
 @using GoWeb.Shared.Features.Shared
 @using GoWeb.Shared.Models
 @using GoWeb.Shared.Requests
@@ -13,7 +14,7 @@
 @inject ToastService toastService
 @implements IDisposable
 
-
+<Map LatCity="32" LonCity="32" />
 
 
 @if ( typesEvent != null )

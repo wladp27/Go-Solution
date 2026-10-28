@@ -1,0 +1,36 @@
+﻿@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<div @ref="mapRef" id="map" style="width: 100%; height: 500px; position: relative;"></div>
+
+@code {
+    [Parameter]
+    public double LonCity { get; set; }
+
+    [Parameter]
+    public double LatCity { get; set; }
+
+    private ElementReference mapRef;
+    private IJSObjectReference? _routeMapModule;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+
+            string modulePath = "./_content/GoWeb.Shared/Features/Map/Components/Map.razor.js";
+
+            _routeMapModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", modulePath);
+            await _routeMapModule.InvokeVoidAsync("initMapBookStyle", mapRef, LatCity, LonCity);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_routeMapModule is not null)
+        {
+            await _routeMapModule.DisposeAsync();
+        }
+    }
+}
