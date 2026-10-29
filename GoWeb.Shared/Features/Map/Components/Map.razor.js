@@ -39,7 +39,7 @@ export async function initMapBookStyle(container, latCity, lonCity)
 }
 
 
-export async function addMarkers(map, points)
+export async function addMarkers(map, points, mapComponent)
 {
     if (!map)
     {
@@ -58,23 +58,25 @@ export async function addMarkers(map, points)
     content.style.border = '2px solid white';
     content.style.boxShadow = '0 1px 3px rgba(0,0,0,0.3)';
 
+    const dotElement = document.createElement('div');
+    dotElement.style.width = '20px';
+    dotElement.style.height = '20px';
+    dotElement.style.backgroundColor = '#ff0000';
+    dotElement.style.borderRadius = '50%';
+    dotElement.style.border = '2px solid white';
+    dotElement.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)'; 
 
     const marker = (feature) => {
         return new window.ymaps3.YMapMarker(
                                             {
-                                                coordinates: feature.geometry.coordinates
+                                                coordinates: feature.geometry.coordinates,
+                                                onClick() { mapComponent.invokeMethodAsync("OpenEventInMap", feature.id); }
                                             },
                                             content.cloneNode(true)
                                            );
     }
     const cluster = (coordinates, features) => {
-        const dotElement = document.createElement('div');
-        dotElement.style.width = '20px';
-        dotElement.style.height = '20px';
-        dotElement.style.backgroundColor = '#ff0000'; 
-        dotElement.style.borderRadius = '50%'; 
-        dotElement.style.border = '2px solid white'; 
-        dotElement.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)'; 
+        
         return new window.ymaps3.YMapMarker({coordinates},  dotElement );
     }
 

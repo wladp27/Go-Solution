@@ -2,6 +2,7 @@
 @using Microsoft.JSInterop
 @inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
+@implements IDisposable
 
 <div @ref="mapRef" id="map" style="width: 100%; height: 500px; position: relative;"></div>
 
@@ -13,45 +14,52 @@
     public double LatCity { get; set; }
 
     [Parameter]
-    public List<LocationDTO> ListLocation { get; set; } = new();
+    public List<EventSummaryDTO> ListEvent { get; set; } = new();
 
     private ElementReference mapRef;
     private IJSObjectReference? _routeMapModule;
     private IJSObjectReference? _mapInstance;
+    private DotNetObjectReference<Map> _mapReference = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-
+            _mapReference = DotNetObjectReference.Create(this);
             string modulePath = "./_content/GoWeb.Shared/Features/Map/Components/Map.razor.js";
-
             _routeMapModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", modulePath);
             _mapInstance = await _routeMapModule.InvokeAsync<IJSObjectReference>("initMapBookStyle", mapRef, LatCity, LonCity);
-            
+
         }
         if (_mapInstance is not null && _routeMapModule is not null)
         {
-            var pointsList = (ListLocation ?? new List<LocationDTO>()).Select(r => new
+            var pointsList = (ListEvent ?? new List<EventSummaryDTO>()).Select(r => new
             {
                 type = "Feature",
                 id = r.Id,
                 geometry = new
                 {
                     type = "Point",
-                    coordinates = new double[] { r.LocationLongitude, r.LocationLatitude }
+                    coordinates = new double[] { r.Location.LocationLongitude, r.Location.LocationLatitude }
                 },
                 properties = new
                 {
-                    name = r.Address
+                    name = r.EventName
                 }
             }).ToList();
 
-    
-            await _routeMapModule.InvokeVoidAsync("addMarkers", _mapInstance, pointsList);
-            
+
+            await _routeMapModule.InvokeVoidAsync("addMarkers", _mapInstance, pointsList, _mapReference);
+
         }
-       
+
+    }
+
+
+    [JSInvokable]
+    public void OpenEventInMap(int idEvent)
+    {
+        Console.WriteLine(idEvent);
     }
 
     public async ValueTask DisposeAsync()
@@ -61,4 +69,14 @@
             await _routeMapModule.DisposeAsync();
         }
     }
+
+    public void Dispose()
+    {
+        _mapReference?.Dispose();
+    }
+
+    
+
+
+
 }
