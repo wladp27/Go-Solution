@@ -1,4 +1,5 @@
-﻿@using Microsoft.JSInterop
+﻿@using GoWeb.Shared.Models
+@using Microsoft.JSInterop
 @inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
 
@@ -11,8 +12,12 @@
     [Parameter]
     public double LatCity { get; set; }
 
+    [Parameter]
+    public List<LocationDTO> ListLocation { get; set; } = new();
+
     private ElementReference mapRef;
     private IJSObjectReference? _routeMapModule;
+    private IJSObjectReference? _mapInstance;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -22,8 +27,31 @@
             string modulePath = "./_content/GoWeb.Shared/Features/Map/Components/Map.razor.js";
 
             _routeMapModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", modulePath);
-            await _routeMapModule.InvokeVoidAsync("initMapBookStyle", mapRef, LatCity, LonCity);
+            _mapInstance = await _routeMapModule.InvokeAsync<IJSObjectReference>("initMapBookStyle", mapRef, LatCity, LonCity);
+            
         }
+        if (_mapInstance is not null && _routeMapModule is not null)
+        {
+            var pointsList = (ListLocation ?? new List<LocationDTO>()).Select(r => new
+            {
+                type = "Feature",
+                id = r.Id,
+                geometry = new
+                {
+                    type = "Point",
+                    coordinates = new double[] { r.LocationLongitude, r.LocationLatitude }
+                },
+                properties = new
+                {
+                    name = r.Address
+                }
+            }).ToList();
+
+    
+            await _routeMapModule.InvokeVoidAsync("addMarkers", _mapInstance, pointsList);
+            
+        }
+       
     }
 
     public async ValueTask DisposeAsync()

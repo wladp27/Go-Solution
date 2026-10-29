@@ -7,7 +7,6 @@ export async function initMapBookStyle(container, latCity, lonCity)
         try {
             await new Promise((resolve, reject) => {
                 const script = document.createElement('script');
-                // Твой рабочий ключ API
                 script.src = "https://api-maps.yandex.ru/v3/?apikey=7dab67a6-408d-45e0-b597-70c61e0f4951&lang=ru_RU";
                 script.async = true;
                 script.onload = () => resolve();
@@ -23,7 +22,7 @@ export async function initMapBookStyle(container, latCity, lonCity)
     console.log("JS: 3. Ждем готовности ymaps3.ready...");
     await window.ymaps3.ready;
 
-    const { YMap, YMapDefaultSchemeLayer } = window.ymaps3;
+    const { YMap, YMapDefaultSchemeLayer,YMapDefaultFeaturesLayer } = window.ymaps3;
 
     const map = new YMap(container, {
         location: {
@@ -33,7 +32,58 @@ export async function initMapBookStyle(container, latCity, lonCity)
     });
 
     map.addChild(new YMapDefaultSchemeLayer());
+    map.addChild(new YMapDefaultFeaturesLayer());
 
     console.log("JS: 4. Карта успешно отрисована!");
     return map;
+}
+
+
+export async function addMarkers(map, points)
+{
+    if (!map)
+    {
+        console.warn("Карта еще не готова. Ждем инициализации...");
+        return;
+    }
+    await window.ymaps3.ready;
+    const { YMap, YMapDefaultSchemeLayer, YMapMarker, YMapLayer } = window.ymaps3;
+    const { YMapClusterer, clusterByGrid } = await window.ymaps3.import('@yandex/ymaps3-clusterer@0.0.1');
+
+    const content = document.createElement('div');
+    content.style.width = '14px';
+    content.style.height = '14px';
+    content.style.backgroundColor = '#007bff'; 
+    content.style.borderRadius = '50%'; 
+    content.style.border = '2px solid white';
+    content.style.boxShadow = '0 1px 3px rgba(0,0,0,0.3)';
+
+
+    const marker = (feature) => {
+        return new window.ymaps3.YMapMarker(
+                                            {
+                                                coordinates: feature.geometry.coordinates
+                                            },
+                                            content.cloneNode(true)
+                                           );
+    }
+    const cluster = (coordinates, features) => {
+        const dotElement = document.createElement('div');
+        dotElement.style.width = '20px';
+        dotElement.style.height = '20px';
+        dotElement.style.backgroundColor = '#ff0000'; 
+        dotElement.style.borderRadius = '50%'; 
+        dotElement.style.border = '2px solid white'; 
+        dotElement.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)'; 
+        return new window.ymaps3.YMapMarker({coordinates},  dotElement );
+    }
+
+    const clusterer = new YMapClusterer({
+        method: clusterByGrid({ gridSize: 64 }),
+        features: points,
+        marker,
+        cluster
+    });
+    map.addChild(clusterer);
+        
 }

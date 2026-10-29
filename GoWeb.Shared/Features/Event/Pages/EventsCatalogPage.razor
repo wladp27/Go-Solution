@@ -5,8 +5,11 @@
 @page "/events"
 @using BootstrapBlazor.Components
 @using GoWeb.Shared.Features.Event.Components
+@using GoWeb.Shared.Features.Map.Components
 @using GoWeb.Shared.Features.Shared
 <h3>Каталог событий</h3>
+
+
 
 <EventFilter FilterEvent="filterDTO"></EventFilter>
 @if (SelectedCity == 0)
@@ -15,6 +18,7 @@
 }
 else
 {
+   <Map LatCity="53.195878" LonCity="50.100202" ListLocation="@list.Select(e=>e.Location).ToList()"/>
    <EventList List="list"> </EventList>
 }
 
@@ -48,7 +52,7 @@ else
 
             if (resultKtoKuda.IsSuccess)
             {
-               listNew.AddRange(resultKtoKuda.Data.Events);
+           //    listNew.AddRange(resultKtoKuda.Data.Events);
             }
             else
             {
