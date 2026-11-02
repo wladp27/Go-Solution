@@ -9,7 +9,7 @@
             @foreach (var ev in List)
             {
                 <div class="col-md-4">
-                    <EventCard SelectedEvent="ev" OnClick="(eventSummary)=>Click(eventSummary)"> </EventCard> 
+                    <EventCard SelectedEvent="ev"> </EventCard> 
                 </div>
             }
         </div>
@@ -25,13 +25,4 @@ else
 {
     [Parameter, EditorRequired]
     public List<EventSummaryDTO> List { get; set; } = default!;
-    private void Click(EventSummaryDTO eventSummary)
-    {
-        if (eventSummary != null)
-        {
-            var jsonModel = System.Text.Json.JsonSerializer.Serialize(eventSummary);
-            navigationManager.NavigateTo(Routes.EventDetails.Replace("{id}", eventSummary.Id.ToString()), new NavigationOptions { HistoryEntryState = jsonModel });
-        }
-
-    }
 }
