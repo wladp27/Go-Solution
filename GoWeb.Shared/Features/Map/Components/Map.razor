@@ -1,10 +1,40 @@
-﻿@using GoWeb.Shared.Models
+﻿@using GoWeb.Shared.Features.Event.Components
+@using GoWeb.Shared.Features.Map.Components.Shared
+@using GoWeb.Shared.Models
 @using Microsoft.JSInterop
 @inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
 @implements IDisposable
 
 <div @ref="mapRef" id="map" style="width: 100%; height: 500px; position: relative;"></div>
+
+@if (isSelectedMarker)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-fullscreen-md-down">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Выбранные события</h5>
+                    <button type="button" class="btn-close" @onclick="() => { isSelectedMarker = false; }"></button>
+                </div>
+                <div class="modal-body">
+                    @if (seletedEvents != null && seletedEvents.Count != 0)
+                    {
+                        foreach (var ev in seletedEvents)
+                        {
+                            <EventCard SelectedEvent="ev"></EventCard>
+                        }
+                    }
+                    else
+                    {
+                        <h5>Ошибка! Событие не найдено!</h5>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 
 @code {
     [Parameter]
@@ -20,7 +50,8 @@
     private IJSObjectReference? _routeMapModule;
     private IJSObjectReference? _mapInstance;
     private DotNetObjectReference<Map> _mapReference = default!;
-
+    private bool isSelectedMarker = false;
+    private List<EventSummaryDTO> seletedEvents = new();
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -59,7 +90,20 @@
     [JSInvokable]
     public void OpenEventInMap(int idEvent)
     {
-        Console.WriteLine(idEvent);
+        isSelectedMarker = true;
+        seletedEvents.Clear();
+        var selectedEvent = ListEvent.FirstOrDefault(e => e.Id == idEvent);
+        if (selectedEvent != null) seletedEvents.Add(selectedEvent);
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void OpenEventsInMap(int[] idsEvents)
+    {
+        isSelectedMarker = true;
+        seletedEvents.Clear();
+        seletedEvents = ListEvent.Where(e => idsEvents.Contains(e.Id)).ToList();
+        StateHasChanged();
     }
 
     public async ValueTask DisposeAsync()

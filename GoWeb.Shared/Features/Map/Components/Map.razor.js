@@ -1,3 +1,4 @@
+let currentClusters = null;
 export async function initMapBookStyle(container, latCity, lonCity)
 {
     console.log("JS: 1. Функция вызвана, получаем координаты: ", latCity, lonCity);
@@ -46,6 +47,13 @@ export async function addMarkers(map, points, mapComponent)
         console.warn("Карта еще не готова. Ждем инициализации...");
         return;
     }
+
+    if (currentClusters)
+    {
+        map.removeChild(currentClusters);
+        currentClusters = null;
+    }
+
     await window.ymaps3.ready;
     const { YMap, YMapDefaultSchemeLayer, YMapMarker, YMapLayer } = window.ymaps3;
     const { YMapClusterer, clusterByGrid } = await window.ymaps3.import('@yandex/ymaps3-clusterer@0.0.1');
@@ -77,15 +85,32 @@ export async function addMarkers(map, points, mapComponent)
     }
     const cluster = (coordinates, features) => {
         
-        return new window.ymaps3.YMapMarker({coordinates},  dotElement );
+        return new window.ymaps3.YMapMarker({
+            coordinates, onClick() {
+                                    const ids = features.map(f => f.id);
+                                    mapComponent.invokeMethodAsync("OpenEventsInMap", ids);
+                                    }},  dotElement );
     }
 
-    const clusterer = new YMapClusterer({
+    currentClusters = new YMapClusterer({
         method: clusterByGrid({ gridSize: 64 }),
         features: points,
         marker,
         cluster
     });
-    map.addChild(clusterer);
+    map.addChild(currentClusters);
         
+}
+
+export async function flyToCity(map, lon, lat)
+{
+    if (!map) return;
+
+    map.setLocation(
+        {
+            center: [lon, lat],
+            zoom: 10,
+            duration:800
+        }
+    )
 }
