@@ -1,7 +1,11 @@
-﻿@using GoWeb.Shared.Features.Event.Components
+﻿@using BootstrapBlazor.Components
+@using GoWeb.Shared.Features.Event.Components
 @using GoWeb.Shared.Models
+@using GoWeb.Shared.Service
 @using Microsoft.JSInterop
 @inject IJSRuntime JSRuntime
+@inject CityService cityService
+@inject ToastService toastService
 @implements IAsyncDisposable
 @implements IDisposable
 
@@ -36,21 +40,40 @@
 
 
 @code {
-    [Parameter]
-    public double LonCity { get; set; }
 
     [Parameter]
-    public double LatCity { get; set; }
+    public int IdCity { get; set;}
 
     [Parameter]
     public List<EventSummaryDTO> ListEvent { get; set; } = new();
 
+
+
+    private CityDTO selectedCity { get; set; }
     private ElementReference mapRef;
     private IJSObjectReference? _routeMapModule;
     private IJSObjectReference? _mapInstance;
     private DotNetObjectReference<Map> _mapReference = default!;
     private bool isSelectedMarker = false;
     private List<EventSummaryDTO> seletedEvents = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+
+        if(IdCity!=0)
+        {
+            var response = await cityService.GetCityById(IdCity);
+            if (response.IsSuccess)
+                selectedCity = response.Data;
+            else
+                await toastService.Error("Ошибка", response.ErrorMessage);
+        }
+        else
+        {
+            selectedCity = new CityDTO { NameCity = "Самара", LocationLatitude = 50.100202, LocationLongitude = 53.195878 };
+        }
+    }  
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -58,7 +81,7 @@
             _mapReference = DotNetObjectReference.Create(this);
             string modulePath = "./_content/GoWeb.Shared/Features/Map/Components/Map.razor.js";
             _routeMapModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", modulePath);
-            _mapInstance = await _routeMapModule.InvokeAsync<IJSObjectReference>("initMapBookStyle", mapRef, LatCity, LonCity);
+            _mapInstance = await _routeMapModule.InvokeAsync<IJSObjectReference>("initMapBookStyle", mapRef, selectedCity.LocationLatitude, selectedCity.LocationLongitude);
 
         }
         if (_mapInstance is not null && _routeMapModule is not null)
@@ -78,7 +101,7 @@
                 }
             }).ToList();
 
-
+            await _routeMapModule.InvokeVoidAsync("flyToCity", _mapInstance, selectedCity.LocationLatitude, selectedCity.LocationLongitude);
             await _routeMapModule.InvokeVoidAsync("addMarkers", _mapInstance, pointsList, _mapReference);
 
         }
