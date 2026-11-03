@@ -102,7 +102,7 @@ export async function addMarkers(map, points, mapComponent)
         
 }
 
-export async function flyToCity(map, lon, lat)
+export async function flyToCity(map, lat, lon)
 {
     if (!map) return;
 

@@ -31,5 +31,18 @@ namespace GoWeb.Shared.Service
             }
             return OperationResult<List<CityDTO>>.Success(cityList);
         }
+
+        public async Task<OperationResult<CityDTO>> GetCityById(int id)
+        {
+            var response = await GetCities();
+            if (response.IsSuccess)
+            {
+                var city =  response.Data.FirstOrDefault(c=>c.Id==id);
+                if(city == null)
+                    return OperationResult<CityDTO>.Failure("Выбранного города не существует в базе приложения");
+                return OperationResult<CityDTO>.Success(city);
+            }
+            return OperationResult<CityDTO>.Failure(response.ErrorMessage);
+        }
     }
 }
