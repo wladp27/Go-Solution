@@ -78,7 +78,7 @@ export async function addMarkers(map, points, mapComponent)
         return new window.ymaps3.YMapMarker(
                                             {
                                                 coordinates: feature.geometry.coordinates,
-                                                onClick() { mapComponent.invokeMethodAsync("OpenEventInMap", feature.id); }
+                                                onClick() { mapComponent.invokeMethodAsync("OnMarkerClicked", [feature]); }
                                             },
                                             content.cloneNode(true)
                                            );
@@ -87,8 +87,7 @@ export async function addMarkers(map, points, mapComponent)
         
         return new window.ymaps3.YMapMarker({
             coordinates, onClick() {
-                                    const ids = features.map(f => f.id);
-                                    mapComponent.invokeMethodAsync("OpenEventsInMap", ids);
+                                    mapComponent.invokeMethodAsync("OnMarkerClicked", features);
                                     }},  dotElement );
     }
 

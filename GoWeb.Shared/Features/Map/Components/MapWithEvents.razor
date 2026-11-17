@@ -1,0 +1,81 @@
+﻿@using BootstrapBlazor.Components
+@using GoWeb.Shared.Features.Event.Components
+@using GoWeb.Shared.Features.Map.Components.Shared
+@using GoWeb.Shared.Models
+@using GoWeb.Shared.Service
+@using Microsoft.JSInterop
+@inject CityService cityService
+@inject ToastService toastService
+
+
+<Map IdCity="IdCity" PointsList="@pointsList" OnPointSelected="OnMarkerClicked"></Map>
+@if (isSelectedMarker)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-fullscreen-md-down">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Выбранные события</h5>
+                    <button type="button" class="btn-close" @onclick="() => { isSelectedMarker = false; }"></button>
+                </div>
+                <div class="modal-body">
+                    @if (seletedEvents != null && seletedEvents.Count != 0)
+                    {
+                        foreach (var ev in seletedEvents)
+                        {
+                            <EventCard SelectedEvent="ev"></EventCard>
+                        }
+                    }
+                    else
+                    {
+                        <h5>Ошибка! Событие не найдено!</h5>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int IdCity { get; set; }
+
+    [Parameter]
+    public List<EventSummaryDTO> ListEvent { get; set; } = new();
+
+    private ElementReference mapRef;
+    private DotNetObjectReference<Map> _mapReference = default!;
+    private bool isSelectedMarker = false;
+    private List<EventSummaryDTO> seletedEvents = new();
+    private List<MapFeature> pointsList = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        pointsList = (ListEvent ?? new List<EventSummaryDTO>()).Select(r => new MapFeature
+        {
+            Id = r.Id,
+            Geometry = new MapGeometry
+            {
+                Coordinates = new double[] { r.Location.LocationLongitude, r.Location.LocationLatitude }
+            },
+            Properties = new MapProperties
+            {
+                Name = r.EventName
+            }
+        }).ToList();
+    }
+
+
+
+
+
+    [JSInvokable]
+    public void OnMarkerClicked(MapFeature[] pointEvents)
+    {
+        isSelectedMarker = true;
+        seletedEvents.Clear();
+        seletedEvents = ListEvent.Where(e => pointEvents.Any(p => p.Id == e.Id)).ToList();
+        StateHasChanged();
+    }
+
+}
