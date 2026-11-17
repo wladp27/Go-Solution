@@ -18,8 +18,21 @@
 }
 else
 {
-    <Map IdCity="SelectedCity" ListEvent="@list" />
-   <EventList List="list"> </EventList>
+    <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" @onclick="DisplayMapWithEvents">
+        <label class="form-check-label" for="flexSwitchCheckDefault">Показать события на карте</label>
+    </div>
+    @if (isMapVisible)
+    {
+        <div class="container-fluid my-4 border border-2 rounded-3 overflow-hidden p-0">
+            <MapWithLocation IdCity="SelectedCity"  />
+        </div>
+    }
+    else
+    {
+        <EventList List="list"> </EventList>
+    }
+    
 }
 
 @code
@@ -33,7 +46,7 @@ else
     private EventFilterDTO filterDTO { get; set; } = new();
 
     private List<EventSummaryDTO> list { get; set; } = new();
-
+    private bool isMapVisible { get; set; } = false;
 
 
     protected override async Task  OnParametersSetAsync()
@@ -52,7 +65,7 @@ else
 
             if (resultKtoKuda.IsSuccess)
             {
-           //    listNew.AddRange(resultKtoKuda.Data.Events);
+                //    listNew.AddRange(resultKtoKuda.Data.Events);
             }
             else
             {
@@ -70,5 +83,9 @@ else
 
     }
 
+    private async Task DisplayMapWithEvents()
+    {
+        isMapVisible = !isMapVisible;
+    }
 
 }
