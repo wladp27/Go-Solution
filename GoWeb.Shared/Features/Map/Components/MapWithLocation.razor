@@ -1,0 +1,62 @@
+﻿@using GoWeb.Shared.Features.Map.Components.Shared
+@using Microsoft.JSInterop
+
+<div>
+    <input @bind="searchQuery" placeholder="Введите адрес..." />
+    <button @onclick="OnSearchClick">Найти на карте</button>
+</div>
+
+<Map @ref="_mapComponent" IdCity="IdCity" PointsList="@pointsList" OnPointSelected="TriggerMarkerClick"></Map>
+
+
+
+@code {
+    [Parameter]
+    public int IdCity { get; set; }
+
+
+    private string searchQuery { get; set; } = string.Empty;
+    private Map _mapComponent = default!;
+    private List<MapFeature> selectedLocation = new();
+    private bool isSelectedMarker = false;
+    private List<MapFeature> pointsList = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        pointsList.Clear();
+    }
+
+
+
+    private async Task OnSearchClick()
+    {
+        
+        if (_mapComponent != null && !string.IsNullOrWhiteSpace(searchQuery))
+        {
+            var listLocation = await _mapComponent.SearchLocation(searchQuery);
+            pointsList = listLocation.Select(r => new MapFeature
+            {
+                Id = 0,
+                Geometry = new MapGeometry
+                {
+                    Coordinates = new double[] { r.Longitude, r.Latitude }
+                },
+                Properties = new MapProperties
+                {
+                    Name = r.Name
+                }
+            }).ToList();
+        }
+    }
+
+    
+
+   
+    public void TriggerMarkerClick(MapFeature[] pointEvents)
+    {
+        isSelectedMarker = true;
+        selectedLocation.Clear();
+        selectedLocation = pointsList.Where(e => pointEvents.Any(p => p.Geometry.Coordinates[0] == e.Geometry.Coordinates[0] && p.Geometry.Coordinates[1] == e.Geometry.Coordinates[1])).ToList();
+        StateHasChanged();
+    }
+}
