@@ -114,3 +114,25 @@ export async function flyToCity(map, lat, lon)
         }
     )
 }
+
+export async function searchLocation(nameLocation)
+{
+    const listLocation = await window.ymaps3.search({
+        text: nameLocation,
+        limit: 5
+    });
+    if (!listLocation || listLocation.length === 0)
+    {
+        
+        return null;
+    }
+    return listLocation.map(item => {
+        return {
+            longitude: item.geometry.coordinates[0],
+            latitude: item.geometry.coordinates[1],
+            name: item.properties.name,
+            address: item.properties.description
+        };
+    });
+
+}
